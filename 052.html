@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Zoom Pays</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <style>
+        body { margin: 0; background: #050505; color: #00d4ff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; overflow: hidden; }
+        canvas { background: transparent; }
+        .back { position: fixed; bottom: 30px; color: #00d4ff; text-decoration: none; border: 1px solid #00d4ff; padding: 10px 20px; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+    <h2 id="name-tag">INITIALISATION ZOOM...</h2>
+    <canvas id="zoom-map"></canvas>
+    <a href="index.html" class="back">RETOUR</a>
+
+    <script>
+        // --- CHANGE CES DEUX LIGNES SELON LE PAYS ---
+        const TARGET_ID = "052"; // Utilise "620" pour Portugal, "036" pour Australie, etc.
+        const TARGET_NAME = "FRANCE (MÉTROPOLE)"; 
+
+        const canvas = document.getElementById("zoom-map");
+        const ctx = canvas.getContext("2d");
+        const size = Math.min(window.innerWidth, window.innerHeight) * 0.7;
+        canvas.width = size; canvas.height = size;
+
+        d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(data => {
+            const countries = topojson.feature(data, data.objects.countries).features;
+            let country = countries.find(d => String(d.id).padStart(3,'0') === TARGET_ID);
+
+            // Filtre spécial pour la France (retirer Guyane)
+            if (TARGET_ID === "250" && country.geometry.type === "MultiPolygon") {
+                country.geometry.coordinates = country.geometry.coordinates.filter(p => p[0][0][1] > 40 && p[0][0][0] > -10);
+            }
+
+            document.getElementById("name-tag").innerText = "SYSTÈME : " + TARGET_NAME;
+            const projection = d3.geoMercator().fitSize([size, size], country);
+            const path = d3.geoPath().projection(projection).context(ctx);
+
+            ctx.fillStyle = "#111827"; ctx.beginPath(); path(country); ctx.fill();
+            ctx.shadowColor = "rgba(0, 212, 255, 0.8)"; ctx.shadowBlur = 30;
+            ctx.strokeStyle = "#00d4ff"; ctx.lineWidth = 2; ctx.beginPath(); path(country); ctx.stroke();
+        });
+    </script>
+</body>
+</html>

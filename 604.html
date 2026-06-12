@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Strategic Analysis: Peru [PE]</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <style>
+        body { margin: 0; background: #050505; color: white; font-family: 'Segoe UI', sans-serif; display: flex; overflow: hidden; height: 100vh; }
+        
+        #data-panel {
+            width: 460px; min-width: 460px; background: rgba(10, 10, 10, 0.98);
+            border-right: 1px solid rgba(255, 75, 75, 0.4); padding: 40px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            z-index: 10; overflow-y: auto; box-sizing: border-box;
+        }
+
+        h1 { color: #ff4b4b; text-transform: uppercase; letter-spacing: 5px; font-size: 1.4rem; margin-bottom: 30px; border-left: 4px solid #ff4b4b; padding-left: 15px; margin-top: 0; }
+        
+        .stat-item { margin-bottom: 25px; }
+        .rank-badge { display: inline-block; background: #ff4b4b; color: black; font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle; text-transform: uppercase; }
+        .stat-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; }
+        .stat-value { font-size: 2rem; font-weight: 200; margin-top: 8px; color: #f8fafc; }
+        .bar-bg { width: 100%; height: 5px; background: #1a1a1a; margin-top: 15px; border-radius: 2px; }
+        .bar-fill { height: 100%; transition: width 1.5s ease-out; box-shadow: 0 0 15px rgba(255, 75, 75, 0.4); }
+
+        .visual-intel { margin-top: 20px; padding: 15px; background: rgba(255, 75, 75, 0.03); border: 1px dashed rgba(255, 75, 75, 0.2); }
+        .intel-img { width: 100%; height: 120px; background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/Antamina_mine.jpg'); background-size: cover; background-position: center; border: 1px solid #ff4b4b; opacity: 0.8; margin-bottom: 10px; }
+        .intel-desc { font-size: 0.65rem; color: #94a3b8; font-style: italic; line-height: 1.4; }
+
+        .back-btn { margin-top: 30px; color: #ff4b4b; text-decoration: none; border: 1px solid #ff4b4b; padding: 12px; text-align: center; text-transform: uppercase; letter-spacing: 2px; font-size: 0.75rem; background: rgba(255, 75, 75, 0.05); }
+        .back-btn:hover { background: #ff4b4b; color: black; box-shadow: 0 0 25px #ff4b4b; }
+
+        #map-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: radial-gradient(circle at center, #1a0808 0%, #050505 100%); }
+        canvas { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 40px rgba(255, 75, 75, 0.2)); cursor: crosshair; }
+
+        #mine-popup { display: none; position: fixed; z-index: 1000; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.8); width: 440px; height: 180px; align-items: center; pointer-events: auto; animation: popIn 0.2s ease-out; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        #popup-img { width: 190px; height: 100%; object-fit: cover; background: #111; }
+        .popup-content { flex: 1; padding: 20px; color: #1a1a1a; position: relative; }
+        .popup-title { margin: 0 0 8px 0; color: #ff4b4b; text-transform: uppercase; font-size: 1rem; font-weight: bold; }
+        .popup-desc { margin: 0; font-size: 0.85rem; line-height: 1.4; color: #444; }
+        .close-popup { position: absolute; top: 10px; right: 10px; border: none; background: none; cursor: pointer; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div id="data-panel">
+        <div>
+            <h1>PERU [PE]</h1>
+            <div class="stat-item">
+                <div class="stat-label">Copper <span class="rank-badge">2nd Global</span></div>
+                <div class="stat-value">13.0%<span style="font-size: 1rem; color:#ff4b4b; margin-left:5px">Global Output</span></div>
+                <div class="bar-bg"><div class="bar-fill" style="width: 55%; background: #ff4b4b;"></div></div>
+            </div>
+            <div class="visual-intel">
+                <div class="stat-label" style="font-size: 0.6rem; margin-bottom: 8px;">Intelligence: Antamina Complex</div>
+                <div class="intel-img"></div>
+                <div class="intel-desc">Antamina is one of the world's largest mining complexes, vital to Peru's copper and zinc production in the Andes.</div>
+            </div>
+        </div>
+        <a href="index.html" class="back-btn">Return to System</a>
+    </div>
+
+    <div id="map-container">
+        <canvas id="zoom-map"></canvas>
+        <div id="mine-popup">
+            <img id="popup-img" src="">
+            <div class="popup-content">
+                <button class="close-popup" onclick="document.getElementById('mine-popup').style.display='none'">✕</button>
+                <div id="popup-title" class="popup-title"></div>
+                <div id="popup-desc" class="popup-desc"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("zoom-map");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+        const minesData = [
+            { 
+                name: "Antamina Mine", 
+                coords: [-77.06, -9.53], 
+                img: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Antamina_mine.jpg", 
+                desc: "Major open-pit operation located in the Ancash region." 
+            },
+            { 
+                name: "Uchucchacua", 
+                coords: [-76.67, -10.61], 
+                img: "https://images.unsplash.com/photo-1596496660144-8d9600a00908?auto=format&fit=crop&w=400&q=80", 
+                desc: "One of the most important silver mines in Peru, located in the Lima region." 
+            }
+        ];
+
+        let interactivePoints = [];
+        d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(data => {
+            const world = topojson.feature(data, data.objects.countries);
+            const territory = world.features.find(d => d.id === "604"); // Peru
+            const projection = d3.geoMercator().fitExtent([[500, 100], [canvas.width - 50, canvas.height - 100]], territory);
+            const path = d3.geoPath().projection(projection).context(ctx);
+
+            ctx.fillStyle = "#0d0d0d"; ctx.beginPath(); path(territory); ctx.fill();
+            ctx.strokeStyle = "#ff4b4b"; ctx.lineWidth = 1.5; ctx.beginPath(); path(territory); ctx.stroke();
+
+            minesData.forEach(m => {
+                const p = projection(m.coords);
+                ctx.fillStyle = "#ff4b4b"; ctx.shadowBlur = 15; ctx.shadowColor = "#ff4b4b";
+                ctx.beginPath(); ctx.arc(p[0], p[1], 6, 0, Math.PI * 2); ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = "rgba(148, 163, 184, 0.9)";
+                ctx.font = "bold 12px 'Segoe UI'";
+                ctx.fillText(m.name, p[0] + 15, p[1] + 4);
+                interactivePoints.push({ x: p[0], y: p[1], data: m });
+            });
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const point = interactivePoints.find(p => Math.sqrt((e.clientX - rect.left - p.x)**2 + (e.clientY - rect.top - p.y)**2) < 20);
+            if (point) {
+                document.getElementById("popup-img").src = point.data.img;
+                document.getElementById("popup-title").innerText = point.data.name;
+                document.getElementById("popup-desc").innerText = point.data.desc;
+                const popup = document.getElementById("mine-popup");
+                popup.style.display = 'flex';
+                popup.style.left = (e.clientX + 40) + 'px'; popup.style.top = (e.clientY - 90) + 'px';
+            }
+        });
+    </script>
+</body>
+</html>

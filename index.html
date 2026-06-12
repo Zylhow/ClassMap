@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Système Global - Dashboard Stratégique</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <style>
+        @font-face {
+            font-family: 'ABCNormal';
+            src: url('/Helvetica-Font/Helvetica.ttf') format('truetype'); 
+        }
+        * { box-sizing: border-box; }
+        body { background: #ffffff; color: #111; overflow: hidden; margin: 0; font-family: 'ABCNormal', sans-serif; }
+
+        /* ── NAVBAR ── */
+        #navbar {
+            position: fixed; top: 0; left: 0; right: 0; height: 52px;
+            background: #ffffff; border-bottom: 0.5px solid #ddd;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px; z-index: 1000; font-size: 14px; letter-spacing: 0.06em;
+        }
+        #navbar .nav-brand { color: #111; font-weight: 500; }
+        #navbar .nav-links { display: flex; gap: 32px; }
+        #navbar .nav-links a { color: #444; text-decoration: none; cursor: pointer; letter-spacing: 0.04em; transition: color 0.15s; }
+        #navbar .nav-links a:hover { color: #000; }
+
+        /* ── VIEWS ── */
+        #view-world { position: fixed; inset: 52px 0 0 0; background: #ffffff; }
+        #view-elements { position: fixed; inset: 52px 0 0 0; background: #ffffff; }
+        .view { transition: opacity 0.3s; }
+        .hidden { opacity: 0; pointer-events: none; }
+        .visible { opacity: 1; }
+
+        /* ── PERIODIC TABLE ── */
+        #view-elements { position: fixed; inset: 52px 0 0 0; background: #f8f9fb; overflow-y: auto; }
+        .view-title { font-size: 11px; letter-spacing: 0.14em; color: #999; text-transform: uppercase; padding: 28px 28px 8px; margin: 0; }
+        .view-subtitle { font-size: 0.95rem; color: #555; max-width: 760px; line-height: 1.6; padding: 0 28px 24px; margin: 0; }
+        .periodic-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-auto-rows: minmax(160px, auto);
+            gap: 18px;
+            padding: 0 28px 28px;
+            max-width: 1140px;
+            margin: 0 auto;
+        }
+        .el {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 170px;
+            padding: 18px 20px;
+            color: #fff;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(135deg, rgba(15,20,30,0.95) 0%, rgba(30,35,50,0.98) 100%);
+            box-shadow: 0 20px 45px rgba(5,10,25,0.12);
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+            cursor: pointer;
+        }
+        .el::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.14), transparent 40%);
+            opacity: 0.55;
+            pointer-events: none;
+        }
+        .el::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent, #999);
+            border-radius: 999px;
+            pointer-events: none;
+        }
+        .el * { position: relative; z-index: 1; }
+        .el:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 28px 60px rgba(5,10,25,0.18);
+            border-color: rgba(255,255,255,0.22);
+        }
+        .el.active {
+            border-color: rgba(255,255,255,0.45);
+            box-shadow: 0 28px 70px rgba(5,10,25,0.25);
+        }
+        .el-top { display: flex; align-items: flex-start; gap: 10px; }
+        .el-number { font-size: 0.82rem; color: rgba(255,255,255,0.72); letter-spacing: 0.18em; text-transform: uppercase; }
+        .el-symbol { font-size: 3rem; line-height: 0.9; letter-spacing: -0.06em; }
+        .el-name { margin-top: 16px; font-size: 1rem; font-weight: 600; letter-spacing: 0.02em; color: #f8f8ff; }
+
+        /* ── MODAL ── */
+        #modal { display: none; position: fixed; inset: 0; background: #ffffff; z-index: 10000; overflow: hidden; }
+        #modal-content { display: grid; grid-template-columns: 1fr 1fr; height: 100vh; }
+        .modal-left { padding: 60px 64px; display: flex; flex-direction: column; justify-content: center; position: relative; background: #ffffff; overflow: hidden; }
+        .modal-symbol-bg { position: absolute; bottom: -40px; left: -20px; font-size: 380px; font-weight: 900; color: rgba(0,0,0,0.04); line-height: 1; pointer-events: none; user-select: none; }
+        .modal-atomic { font-size: 13px; color: #999; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; position: relative; z-index: 1; }
+        .modal-title { font-size: clamp(3rem,6vw,5.5rem); font-weight: 700; color: #111; margin: 0 0 8px; line-height: 1; position: relative; z-index: 1; }
+        .modal-symbol-inline { font-size: 1.2rem; font-weight: 600; color: #000; margin-bottom: 32px; position: relative; z-index: 1; }
+        .modal-body-text { font-size: 1.05rem; line-height: 1.75; color: #333; max-width: 520px; position: relative; z-index: 1; }
+        .modal-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 36px; position: relative; z-index: 1; }
+        .modal-stat { border-top: 1px solid #eee; padding-top: 12px; }
+        .modal-stat-label { font-size: 11px; letter-spacing: 0.1em; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
+        .modal-stat-value { font-size: 1rem; font-weight: 600; color: #111; }
+        .modal-funfact { margin-top: 28px; padding: 16px 20px; border-left: 3px solid #000; background: #fafafa; position: relative; z-index: 1; }
+        .modal-funfact-label { font-size: 10px; letter-spacing: 0.14em; color: #000; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
+        .modal-funfact-text { font-size: 0.95rem; color: #555; line-height: 1.6; }
+        .modal-right { position: relative; overflow: hidden; background: #f0efed; }
+        .modal-right img.metal-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .modal-right-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .modal-right-fallback span { font-size: 18rem; font-weight: 900; color: rgba(0,0,0,0.06); }
+        .modal-map-overlay { position: absolute; bottom: 20px; right: 20px; width: 280px; height: 175px; border: 1px solid rgba(255,255,255,0.5); border-radius: 4px; overflow: hidden; cursor: pointer; z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,0.35); background: #f0efed; transition: box-shadow 0.2s; }
+        .modal-map-overlay:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.5); }
+        .modal-map-overlay-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; letter-spacing: 0.1em; text-align: center; padding: 5px 0; pointer-events: none; text-transform: uppercase; }
+        .modal-size-slider { position: absolute; bottom: 20px; left: 20px; z-index: 10; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.88); padding: 6px 12px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+        .modal-size-slider label { font-size: 10px; letter-spacing: 0.1em; color: #555; text-transform: uppercase; white-space: nowrap; }
+        .modal-size-slider input[type=range] { width: 80px; accent-color: #000; cursor: pointer; }
+        .modal-size-slider span { font-size: 10px; color: #999; min-width: 28px; }
+        .modal-close { position: fixed; top: 24px; right: 32px; cursor: pointer; font-size: 12px; letter-spacing: 0.1em; color: #000; z-index: 20001; transition: color 0.2s; }
+
+        /* ── MAP OVERLAY FULLSCREEN ── */
+        #map-overlay { display: none; position: fixed; inset: 0; background: #ffffff; z-index: 20000; flex-direction: column; }
+        #map-overlay.open { display: flex; }
+        #map-overlay-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: #ffffff; border-bottom: 1px solid #ddd; flex-shrink: 0; }
+        #map-overlay-header h2 { margin: 0; color: #000; font-size: 0.9rem; letter-spacing: 0.08em; }
+        #map-overlay-close { cursor: pointer; color: #000; font-size: 0.8rem; letter-spacing: 0.05em; }
+        #map-overlay-body { flex: 1; position: relative; overflow: hidden; }
+        #big-map { position: absolute; inset: 0; }
+
+        /* ── TOOLTIP ── */
+        #mine-tooltip { position: fixed; background: #fff; border: 0.5px solid #ddd; color: #111; font-size: 0.78rem; padding: 0; border-radius: 4px; pointer-events: none; display: none; z-index: 99999; line-height: 1.5; max-width: 220px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,0.12); }
+        .tooltip-img { width: 220px; height: 120px; object-fit: cover; display: block; }
+        .tooltip-img-placeholder { width: 220px; height: 120px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #999; letter-spacing: 0.08em; text-transform: uppercase; }
+        .tooltip-body { padding: 8px 12px 10px; }
+
+        /* ── LÉGENDE ── */
+        #map-legend { position: absolute; bottom: 20px; left: 20px; background: rgba(255,255,255,0.92); border: 0.5px solid #ddd; padding: 12px 16px; font-size: 11px; z-index: 100; pointer-events: none; letter-spacing: 0.04em; }
+        .legend-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .legend-row:last-child { margin-bottom: 0; }
+        .legend-label { color: #333; }
+
+        /* ── ABOUT DRAWER ── */
+        #about-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.18); z-index: 9000; }
+        #about-drawer { position: fixed; top: 0; bottom: 0; left: 0; width: 320px; background: #ffffff; z-index: 9001; transform: translateX(-100%); transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); border-right: 0.5px solid #e0e0e0; display: flex; flex-direction: column; }
+        #about-drawer.open { transform: translateX(0); }
+        .about-drawer-header { padding: 20px 24px 14px; border-bottom: 0.5px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+        .about-drawer-header span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #555; font-weight: 700; }
+        .about-drawer-close { cursor: pointer; font-size: 11px; color: #aaa; letter-spacing: 0.06em; transition: color 0.15s; }
+        .about-drawer-close:hover { color: #000; }
+        .about-drawer-body { padding: 28px 24px; overflow-y: auto; flex: 1; }
+        .about-drawer-body p { font-size: 12px; line-height: 1.85; color: #555; letter-spacing: 0.02em; }
+    </style>
+</head>
+<body>
+
+    <nav id="navbar">
+        <span class="nav-brand">O LADO OCULTO DAS ENERIAS RÉNOVÁVEIS</span>
+        <div class="nav-links">
+            <a onclick="toggleMetals()">Metals</a>
+            <a onclick="showMapView()">Map</a>
+            <a onclick="openAbout()">About</a>
+        </div>
+    </nav>
+
+    <div id="mine-tooltip"></div>
+
+    <div id="map-overlay">
+        <div id="map-overlay-header">
+            <h2 id="map-overlay-title">MINES</h2>
+            <span id="map-overlay-close" onclick="closeMapOverlay()">[CLOSE]</span>
+        </div>
+        <div id="map-overlay-body"><div id="big-map"></div></div>
+    </div>
+
+    <div id="modal"></div>
+
+    <div id="about-overlay" onclick="closeAbout()"></div>
+    <div id="about-drawer">
+        <div class="about-drawer-header">
+            <span>About</span>
+            <span class="about-drawer-close" onclick="closeAbout()">[close]</span>
+        </div>
+        <div class="about-drawer-body"><p>Ton texte de présentation ici.</p></div>
+    </div>
+
+    <!-- MAP: canvas draggable/zoomable (code 3) -->
+    <div id="view-world" class="view visible">
+        <canvas id="canvas-world" style="cursor:grab;"></canvas>
+    </div>
+
+    <!-- METALS: tableau périodique cases noires (code 3) -->
+    <div id="view-elements" class="view hidden">
+    <h2 class="view-title">TABLEAU PÉRIODIQUE DES RESSOURCES CRITIQUES</h2>
+    <p class="view-subtitle">Cliquez sur un métal pour explorer ses mines, ses usages et sa place stratégique dans la transition énergétique.</p>
+    <div class="periodic-wrapper" id="periodic-table"></div>
+</div>
+
+    <script>
+        /* ═══════════ COULEURS & DONNÉES ═══════════ */
+        const ELEMENT_COLORS = {
+            "Lithium":   "#4A90D9",
+            "Nickel":    "#2EAF7D",
+            "Cobalt":    "#E05C8A",
+            "Cuivre":    "#E8813A",
+            "Argent":    "#9B6DD6",
+            "Aluminium": "#C9A227"
+        };
+
+        const MINES = {
+            "Lithium": [
+                { name:"Salar de Atacama", lat:-23.5, lng:-68.2, country:"Chili",      output:"140 000 t/an", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Lithium_brine_pools_in_the_Atacama_Desert.jpg/640px-Lithium_brine_pools_in_the_Atacama_Desert.jpg" },
+                { name:"Greenbushes",      lat:-33.8, lng:116.0, country:"Australie",  output:"80 000 t/an",  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Talison_Lithium_Greenbushes_mine_2012.jpg/640px-Talison_Lithium_Greenbushes_mine_2012.jpg" },
+                { name:"Salar de Uyuni",   lat:-20.1, lng:-67.5, country:"Bolivie",    output:"estimé",       img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Salar_de_Uyuni%2C_Bolivia_%282%29.jpg/640px-Salar_de_Uyuni%2C_Bolivia_%282%29.jpg" },
+                { name:"Silver Peak",      lat: 37.7, lng:-117.6,country:"États-Unis", output:"6 000 t/an",   img:"" },
+                { name:"Bikita",           lat:-20.9, lng: 32.8, country:"Zimbabwe",   output:"2 000 t/an",   img:"" }
+            ],
+            "Nickel": [
+                { name:"Norilsk",      lat: 69.3, lng: 88.2, country:"Russie",    output:"200 000 t/an", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Norilsk_Mining_Plant.jpg/640px-Norilsk_Mining_Plant.jpg" },
+                { name:"Sudbury",      lat: 46.5, lng:-81.0, country:"Canada",    output:"50 000 t/an",  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Sudbury_superstack.jpg/640px-Sudbury_superstack.jpg" },
+                { name:"Sorowako",     lat: -2.5, lng:121.4, country:"Indonésie", output:"78 000 t/an",  img:"" },
+                { name:"Cerro Matoso", lat:  7.6, lng:-75.5, country:"Colombie",  output:"44 000 t/an",  img:"" },
+                { name:"Thompson Mine",lat: 55.7, lng:-97.8, country:"Canada",    output:"30 000 t/an",  img:"" }
+            ],
+            "Cobalt": [
+                { name:"Tenke Fungurume", lat:-10.5, lng: 26.1, country:"RDC",        output:"15 000 t/an", img:"https://media.lesechos.com/api/v1/images/view/6400ba01444d9840f463f25d/1280x720/0703510707775-web-tete.jpg" },
+                { name:"Mutanda Mine",    lat: -8.0, lng: 23.9, country:"RDC",        output:"25 000 t/an", img:"https://deskeco.com/sites/default/files/styles/1024x578/public/2019-10/Mine-5.jpg?itok=qOPF8glo" },
+                { name:"Bou Azzer",       lat: 30.5, lng: -6.5, country:"Maroc",      output:"2 200 t/an",  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Bou_Azzer_2013b.jpg/1280px-Bou_Azzer_2013b.jpg" },
+                { name:"Ambatovy",        lat:-18.9, lng: 48.4, country:"Madagascar", output:"3 500 t/an",  img:"" },
+                { name:"Cobalt, Ontario", lat: 47.4, lng:-79.7, country:"Canada",     output:"historique",  img:"" }
+            ],
+            "Cuivre": [
+                { name:"Escondida",    lat:-24.3, lng: -69.1, country:"Chili",      output:"1 200 000 t/an", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Minera_Escondida%2C_Chile.jpg/640px-Minera_Escondida%2C_Chile.jpg" },
+                { name:"Morenci",      lat: 33.1, lng:-109.4, country:"États-Unis", output:"450 000 t/an",   img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Morenci_Copper_Mine_Arizona.jpg/640px-Morenci_Copper_Mine_Arizona.jpg" },
+                { name:"Grasberg",     lat: -4.1, lng: 137.1, country:"Indonésie",  output:"350 000 t/an",   img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Grasberg_mine.jpg/640px-Grasberg_mine.jpg" },
+                { name:"Collahuasi",   lat:-20.9, lng: -68.6, country:"Chili",      output:"470 000 t/an",   img:"" },
+                { name:"Chuquicamata", lat:-22.3, lng: -68.9, country:"Chili",      output:"400 000 t/an",   img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Chuquicamata_Chile_Kupfermine.jpg/640px-Chuquicamata_Chile_Kupfermine.jpg" },
+                { name:"Olympic Dam",  lat:-30.4, lng: 136.9, country:"Australie",  output:"200 000 t/an",   img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Olympic_Dam_Smelter.jpg/640px-Olympic_Dam_Smelter.jpg" }
+            ],
+            "Aluminium": [
+                { name:"Weipa (bauxite)", lat:-12.7, lng:141.9, country:"Australie", output:"35 Mt/an", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Weipa_bauxite_mine.jpg/640px-Weipa_bauxite_mine.jpg" },
+                { name:"Sangarédi",       lat: 11.9, lng:-13.8, country:"Guinée",    output:"18 Mt/an", img:"" },
+                { name:"Trombetas (MRN)", lat: -1.5, lng:-56.4, country:"Brésil",    output:"18 Mt/an", img:"" }
+            ],
+            "Argent": [
+                { name:"Fresnillo",  lat: 23.2, lng:-102.9, country:"Mexique",   output:"53 Moz/an", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Fresnillo_mine.jpg/640px-Fresnillo_mine.jpg" },
+                { name:"Cannington", lat:-22.8, lng: 140.7, country:"Australie", output:"16 Moz/an", img:"" },
+                { name:"Antamina",   lat: -9.5, lng: -77.1, country:"Pérou",     output:"12 Moz/an", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Antamina_mine.jpg/640px-Antamina_mine.jpg" },
+                { name:"Peñasquito", lat: 24.9, lng:-101.7, country:"Mexique",   output:"17 Moz/an", img:"" }
+            ]
+        };
+
+        /* ═══════════ ICÔNES SVG ═══════════ */
+        function appendIcon(parent, px, py, elementName, s, color) {
+            const g = parent.append("g").attr("transform",`translate(${px},${py})`).style("cursor","pointer");
+            const sw = 1.5;
+            if (elementName === "Aluminium") {
+                g.append("rect").attr("x",-s).attr("y",-s).attr("width",s*2).attr("height",s*2).attr("fill","none").attr("stroke",color).attr("stroke-width",sw);
+                g.append("line").attr("x1",-s).attr("y1",-s).attr("x2",s).attr("y2",s).attr("stroke",color).attr("stroke-width",sw);
+                g.append("line").attr("x1",s).attr("y1",-s).attr("x2",-s).attr("y2",s).attr("stroke",color).attr("stroke-width",sw);
+            } else if (elementName === "Lithium") {
+                g.append("polygon").attr("points",`0,${-s} ${s},${s} ${-s},${s}`).attr("fill","none").attr("stroke",color).attr("stroke-width",sw);
+            } else if (elementName === "Nickel") {
+                g.append("polygon").attr("points",`0,${-s} ${s},0 0,${s} ${-s},0`).attr("fill","none").attr("stroke",color).attr("stroke-width",sw);
+                g.append("line").attr("x1",0).attr("y1",-s*0.45).attr("x2",0).attr("y2",s*0.45).attr("stroke",color).attr("stroke-width",sw);
+            } else if (elementName === "Argent") {
+                g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw);
+            } else if (elementName === "Cuivre") {
+                g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw);
+                const t=s*0.55;
+                g.append("polygon").attr("points",`0,${-t} ${t},${t} ${-t},${t}`).attr("fill","none").attr("stroke",color).attr("stroke-width",1.2);
+            } else if (elementName === "Cobalt") {
+                g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw);
+                g.append("circle").attr("r",s*0.45).attr("fill","none").attr("stroke",color).attr("stroke-width",1.2);
+            }
+            return g;
+        }
+
+        /* ═══════════ GLOBALS ═══════════ */
+        const canvas = document.getElementById("canvas-world");
+        const ctx = canvas.getContext("2d");
+        let countries, hovered=null, projection;
+        let scale=1, posX=0, posY=0, velX=0, velY=0;
+        let isDragging=false, lastMouseX, lastMouseY, startX, startY, mouseDownCountry=null;
+        let currentElement=null, metalsVisible=false;
+
+        /* ═══════════ NAVBAR ═══════════ */
+        function toggleMetals() {
+            metalsVisible = !metalsVisible;
+            document.getElementById("view-elements").classList.toggle("hidden", !metalsVisible);
+            document.getElementById("view-world").classList.toggle("hidden", metalsVisible);
+        }
+        function showMapView() {
+            document.getElementById("view-world").classList.remove("hidden");
+            document.getElementById("view-elements").classList.add("hidden");
+            metalsVisible = false;
+        }
+        function openAbout() {
+            document.getElementById("about-drawer").classList.add("open");
+            document.getElementById("about-overlay").style.display = "block";
+        }
+        function closeAbout() {
+            document.getElementById("about-drawer").classList.remove("open");
+            document.getElementById("about-overlay").style.display = "none";
+        }
+        function openMapOverlay() {
+            if (!currentElement) return;
+            document.getElementById("map-overlay-title").textContent = "MINES — " + currentElement.toUpperCase();
+            document.getElementById("map-overlay").classList.add("open");
+            setTimeout(() => drawMap("big-map", currentElement, true), 60);
+        }
+        function closeMapOverlay() {
+            document.getElementById("map-overlay").classList.remove("open");
+            document.getElementById("mine-tooltip").style.display = "none";
+        }
+
+        /* ═══════════ LÉGENDE ═══════════ */
+        function buildLegend(containerId) {
+            const old = document.getElementById("map-legend");
+            if (old) old.remove();
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const legend = document.createElement("div");
+            legend.id = "map-legend";
+            const ns = "http://www.w3.org/2000/svg";
+            const s=7, size=s*2+6;
+            const mk=(tag,attrs,parent)=>{const el=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));parent.appendChild(el);return el;};
+            Object.entries(ELEMENT_COLORS).forEach(([name,color])=>{
+                const row=document.createElement("div"); row.className="legend-row";
+                const svg=document.createElementNS(ns,"svg");
+                svg.setAttribute("width",size); svg.setAttribute("height",size);
+                svg.setAttribute("viewBox",`${-s-3} ${-s-3} ${size} ${size}`);
+                const sw=1.5;
+                if(name==="Aluminium"){mk("rect",{x:-s,y:-s,width:s*2,height:s*2,fill:"none",stroke:color,"stroke-width":sw},svg);mk("line",{x1:-s,y1:-s,x2:s,y2:s,stroke:color,"stroke-width":sw},svg);mk("line",{x1:s,y1:-s,x2:-s,y2:s,stroke:color,"stroke-width":sw},svg);}
+                else if(name==="Lithium"){mk("polygon",{points:`0,${-s} ${s},${s} ${-s},${s}`,fill:"none",stroke:color,"stroke-width":sw},svg);}
+                else if(name==="Nickel"){mk("polygon",{points:`0,${-s} ${s},0 0,${s} ${-s},0`,fill:"none",stroke:color,"stroke-width":sw},svg);mk("line",{x1:0,y1:-s*0.45,x2:0,y2:s*0.45,stroke:color,"stroke-width":sw},svg);}
+                else if(name==="Argent"){mk("circle",{r:s,fill:"none",stroke:color,"stroke-width":sw},svg);}
+                else if(name==="Cuivre"){mk("circle",{r:s,fill:"none",stroke:color,"stroke-width":sw},svg);const t=s*0.55;mk("polygon",{points:`0,${-t} ${t},${t} ${-t},${t}`,fill:"none",stroke:color,"stroke-width":1.2},svg);}
+                else if(name==="Cobalt"){mk("circle",{r:s,fill:"none",stroke:color,"stroke-width":sw},svg);mk("circle",{r:s*0.45,fill:"none",stroke:color,"stroke-width":1.2},svg);}
+                const label=document.createElement("span"); label.className="legend-label"; label.textContent=name;
+                row.appendChild(svg); row.appendChild(label); legend.appendChild(row);
+            });
+            container.appendChild(legend);
+        }
+
+        /* ═══════════ DRAW MAP SVG (mini + fullscreen) ═══════════ */
+        function drawMap(containerId, elementName, fullscreen) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = "";
+            const rect = container.getBoundingClientRect();
+            const w = rect.width>0 ? rect.width : (fullscreen?window.innerWidth:400);
+            const h = rect.height>0 ? rect.height : (fullscreen?window.innerHeight-40:300);
+            const color = ELEMENT_COLORS[elementName] || "#000";
+            const svg = d3.select("#"+containerId).append("svg").attr("width",w).attr("height",h).style("display","block").style("width","100%").style("height","100%");
+            const proj = d3.geoMercator().scale(w/6.2).translate([w/2,h/1.5]);
+            const path = d3.geoPath().projection(proj);
+            svg.append("rect").attr("width",w).attr("height",h).attr("fill","#ffffff");
+            const gs=fullscreen?80:40;
+            const grid=svg.append("g").style("pointer-events","none");
+            for(let x=0;x<w;x+=gs)grid.append("line").attr("x1",x).attr("y1",0).attr("x2",x).attr("y2",h).attr("stroke","#e8e6e2").attr("stroke-width",0.5);
+            for(let y=0;y<h;y+=gs)grid.append("line").attr("x1",0).attr("y1",y).attr("x2",w).attr("y2",y).attr("stroke","#e8e6e2").attr("stroke-width",0.5);
+            if(countries){svg.selectAll("path.country").data(countries).enter().append("path").attr("class","country").attr("d",path).attr("fill","#E0E0E0").attr("stroke","#000").attr("stroke-width",0.5);}
+            const tooltip = document.getElementById("mine-tooltip");
+            const s = fullscreen?9:6;
+            (MINES[elementName]||[]).forEach(mine=>{
+                const pt=proj([mine.lng,mine.lat]); if(!pt)return;
+                const [px,py]=pt;
+                const icon=appendIcon(svg,px,py,elementName,s,color);
+                icon.append("circle").attr("r",s+4).attr("fill","transparent");
+                if(fullscreen){svg.append("text").attr("x",px+s+6).attr("y",py+4).attr("fill","#111").attr("font-size","11px").style("pointer-events","none").text(mine.name);}
+                icon.on("mouseover",function(event){
+                    tooltip.style.display="block";
+                    if(fullscreen&&mine.img){tooltip.innerHTML=`<img class="tooltip-img" src="${mine.img}" onerror="this.style.display='none'" alt="${mine.name}"><div class="tooltip-body"><b>${mine.name}</b><br>${mine.country}${mine.output?"<br>Production : "+mine.output:""}</div>`;}
+                    else if(fullscreen){tooltip.innerHTML=`<div class="tooltip-img-placeholder">${mine.name}</div><div class="tooltip-body"><b>${mine.name}</b><br>${mine.country}${mine.output?"<br>Production : "+mine.output:""}</div>`;}
+                    else{tooltip.innerHTML=`<div class="tooltip-body"><b>${mine.name}</b><br>${mine.country}${mine.output?"<br>Production : "+mine.output:""}</div>`;}
+                }).on("mousemove",function(event){
+                    const tw=220,th=fullscreen&&mine.img?180:(fullscreen?155:70);
+                    const left=event.clientX+16+tw>window.innerWidth?event.clientX-tw-10:event.clientX+16;
+                    const top=event.clientY-10+th>window.innerHeight?event.clientY-th-10:event.clientY-10;
+                    tooltip.style.left=left+"px"; tooltip.style.top=top+"px";
+                }).on("mouseout",function(){tooltip.style.display="none";});
+            });
+            if(fullscreen)buildLegend(containerId);
+        }
+
+        /* ═══════════ CANVAS MAP (code 3: drag + zoom + colored SVG icons overlay) ═══════════ */
+        let iconsSvg = null;
+
+        function initMap() {
+            const w=window.innerWidth, h=window.innerHeight-52;
+            canvas.width=w; canvas.height=h;
+            projection=d3.geoMercator().scale(w/6.2).translate([w/2,h/1.5]);
+            const path=d3.geoPath().projection(projection).context(ctx);
+
+            // SVG overlay for colored icons
+            const worldDiv = document.getElementById("view-world");
+            if(iconsSvg) iconsSvg.remove();
+            iconsSvg = d3.select(worldDiv).append("svg")
+                .attr("id","icons-svg")
+                .style("position","absolute").style("inset","0").style("pointer-events","none")
+                .attr("width",w).attr("height",h);
+            buildIconsSvg(w,h);
+
+            // Build legend
+            buildLegend("view-world");
+
+            function draw() {
+                posX+=velX; posY+=velY; velX*=0.92; velY*=0.92;
+                posX=Math.max(-w*(scale-1),Math.min(0,posX));
+                posY=Math.max(-h*(scale-1),Math.min(0,posY));
+                ctx.clearRect(0,0,w,h);
+                ctx.save(); ctx.translate(posX,posY); ctx.scale(scale,scale);
+                ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,w,h);
+                // grid
+                const gridSize=120;
+                ctx.strokeStyle="#e8e6e2"; ctx.lineWidth=0.5/scale;
+                for(let x=0;x<w;x+=gridSize){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+                for(let y=0;y<h;y+=gridSize){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+                // countries
+                countries.forEach(d=>{
+                    ctx.beginPath(); path(d);
+                    ctx.fillStyle=(hovered&&d.id===hovered.id)?"#C8C8C8":"#E0E0E0";
+                    ctx.fill(); ctx.strokeStyle="#000000"; ctx.lineWidth=0.5/scale; ctx.stroke();
+                });
+                ctx.restore();
+                // update svg icons position/scale
+                iconsSvg.attr("transform",null);
+                updateIconsTransform();
+                requestAnimationFrame(draw);
+            }
+
+            canvas.onmousedown=(e)=>{isDragging=true;startX=e.clientX;startY=e.clientY;lastMouseX=e.clientX;lastMouseY=e.clientY;mouseDownCountry=hovered;canvas.style.cursor="grabbing";};
+            window.onmouseup=(e)=>{
+                isDragging=false; canvas.style.cursor="grab";
+                const moved=Math.abs(e.clientX-startX)>5||Math.abs(e.clientY-startY)>5;
+                if(!moved&&hovered&&hovered===mouseDownCountry){window.location.href=String(hovered.id).padStart(3,'0')+".html";}
+                mouseDownCountry=null;
+            };
+            window.onmousemove=(e)=>{
+                if(isDragging){velX=(e.clientX-lastMouseX)*0.8;velY=(e.clientY-lastMouseY)*0.8;lastMouseX=e.clientX;lastMouseY=e.clientY;}
+                const rect=canvas.getBoundingClientRect();
+                const p=projection.invert([(e.clientX-rect.left-posX)/scale,(e.clientY-rect.top-posY)/scale]);
+                hovered=countries.find(c=>d3.geoContains(c,p));
+            };
+            canvas.onwheel=(e)=>{
+                e.preventDefault(); velX=0; velY=0;
+                const rect=canvas.getBoundingClientRect();
+                const mouseX=e.clientX-rect.left, mouseY=e.clientY-rect.top;
+                const pointX=(mouseX-posX)/scale, pointY=(mouseY-posY)/scale;
+                const factor=e.deltaY>0?0.92:1.08;
+                const newScale=Math.max(1,Math.min(scale*factor,8));
+                posX=mouseX-pointX*newScale; posY=mouseY-pointY*newScale; scale=newScale;
+            };
+            draw();
+        }
+
+        function buildIconsSvg(w,h) {
+            iconsSvg.selectAll("*").remove();
+            const tooltip=document.getElementById("mine-tooltip");
+            const s=7;
+            Object.entries(MINES).forEach(([elementName,mines])=>{
+                const color=ELEMENT_COLORS[elementName]||"#000";
+                mines.forEach(mine=>{
+                    const rawPt=projection([mine.lng,mine.lat]); if(!rawPt)return;
+                    const g=iconsSvg.append("g").style("pointer-events","all").style("cursor","pointer");
+                    g.attr("data-raw-x",rawPt[0]).attr("data-raw-y",rawPt[1]);
+                    const sw=1.5;
+                    if(elementName==="Aluminium"){g.append("rect").attr("fill","none").attr("stroke",color).attr("stroke-width",sw);g.append("line").attr("stroke",color).attr("stroke-width",sw).attr("class","diag1");g.append("line").attr("stroke",color).attr("stroke-width",sw).attr("class","diag2");}
+                    else if(elementName==="Lithium"){g.append("polygon").attr("fill","none").attr("stroke",color).attr("stroke-width",sw);}
+                    else if(elementName==="Nickel"){g.append("polygon").attr("fill","none").attr("stroke",color).attr("stroke-width",sw);g.append("line").attr("stroke",color).attr("stroke-width",sw);}
+                    else if(elementName==="Argent"){g.append("circle").attr("fill","none").attr("stroke",color).attr("stroke-width",sw);}
+                    else if(elementName==="Cuivre"){g.append("circle").attr("fill","none").attr("stroke",color).attr("stroke-width",sw);g.append("polygon").attr("fill","none").attr("stroke",color).attr("stroke-width",1.2);}
+                    else if(elementName==="Cobalt"){g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw);g.append("circle").attr("r",s*0.45).attr("fill","none").attr("stroke",color).attr("stroke-width",1.2);}
+                    g.append("circle").attr("r",s+6).attr("fill","transparent");
+                    g.on("mouseover",function(event){
+                        tooltip.style.display="block";
+                        tooltip.innerHTML=mine.img
+                            ?`<img class="tooltip-img" src="${mine.img}" onerror="this.style.display='none'" alt="${mine.name}"><div class="tooltip-body"><b>${mine.name}</b><br><span style="color:#999">${elementName}</span><br>${mine.country}${mine.output?"<br>Production : "+mine.output:""}</div>`
+                            :`<div class="tooltip-body"><b>${mine.name}</b><br><span style="color:#999">${elementName}</span><br>${mine.country}${mine.output?"<br>Production : "+mine.output:""}</div>`;
+                    }).on("mousemove",function(event){
+                        const tw=220,th=mine.img?180:70;
+                        const left=event.clientX+16+tw>window.innerWidth?event.clientX-tw-10:event.clientX+16;
+                        const top=event.clientY-10+th>window.innerHeight?event.clientY-th-10:event.clientY-10;
+                        tooltip.style.left=left+"px"; tooltip.style.top=top+"px";
+                    }).on("mouseout",function(){tooltip.style.display="none";});
+                    // store mine ref for transform update
+                    g.datum({rawX:rawPt[0],rawY:rawPt[1],name:elementName,s});
+                });
+            });
+            updateIconsTransform();
+        }
+
+        function updateIconsTransform() {
+            if(!iconsSvg)return;
+            const s=7;
+            iconsSvg.selectAll("g[data-raw-x]").each(function(d){
+                if(!d)return;
+                const x=d.rawX*scale+posX;
+                const y=d.rawY*scale+posY;
+                const g=d3.select(this);
+                const name=d.name;
+                const sw=1.5;
+                // reposition and resize shapes
+                g.attr("transform",`translate(${x},${y})`);
+                if(name==="Aluminium"){
+                    g.select("rect").attr("x",-s).attr("y",-s).attr("width",s*2).attr("height",s*2);
+                    g.select(".diag1").attr("x1",-s).attr("y1",-s).attr("x2",s).attr("y2",s);
+                    g.select(".diag2").attr("x1",s).attr("y1",-s).attr("x2",-s).attr("y2",s);
+                } else if(name==="Lithium"){
+                    g.select("polygon").attr("points",`0,${-s} ${s},${s} ${-s},${s}`);
+                } else if(name==="Nickel"){
+                    g.select("polygon").attr("points",`0,${-s} ${s},0 0,${s} ${-s},0`);
+                    g.select("line").attr("x1",0).attr("y1",-s*0.45).attr("x2",0).attr("y2",s*0.45);
+                } else if(name==="Argent"){
+                    g.select("circle").attr("r",s);
+                } else if(name==="Cuivre"){
+                    const circles=g.selectAll("circle"); circles.attr("r",s); // first circle
+                    const t=s*0.55; g.select("polygon").attr("points",`0,${-t} ${t},${t} ${-t},${t}`);
+                } else if(name==="Cobalt"){
+                    const cs=g.selectAll("circle"); cs.filter((d,i)=>i===0).attr("r",s); cs.filter((d,i)=>i===1).attr("r",s*0.45);
+                }
+                g.select("circle[r='"+(s+6)+"']").attr("r",s+6);
+            });
+        }
+
+        /* ═══════════ MODAL ═══════════ */
+        function showInfo(e) {
+            currentElement=e.name;
+            const modal=document.getElementById("modal");
+            const content={
+                "Lithium":{symbol:"Li",number:3,photo:"https://mineralseducationcoalition.org/wp-content/uploads/Lithium2_lepidolite_334916054.jpg",info:"Lithium is the lightest solid metal on Earth and the cornerstone of the energy transition. Lithium-ion batteries power smartphones, laptops, and electric vehicles, making it one of the most strategically vital minerals of the 21st century.",fun:"Lithium is so light it floats on water — and so reactive it must be stored in mineral oil to prevent ignition.",stats:{"Atomic mass":"6.941 u","Density":"0.534 g/cm³","Melting point":"180.5 °C","Top producers":"Chile, Australia, China"}},
+                "Nickel":{symbol:"Ni",number:28,photo:"https://images.thewest.com.au/publication/C-16043876/f216f4a0dca7f9e7c92b5d8ddbaba813d95a8423-16x9-x0y150w1440h810.jpg?imwidth=1024&impolicy=wan_v3",info:"Nickel is a lustrous silver-white metal prized for its strength and corrosion resistance. About 70% of global output goes into stainless steel.",fun:"The word 'nickel' comes from the German 'Kupfernickel' — copper demon — because miners mistook the ore for copper.",stats:{"Atomic mass":"58.693 u","Density":"8.908 g/cm³","Melting point":"1 455 °C","Top producers":"Indonesia, Philippines, Russia"}},
+                "Cobalt":{symbol:"Co",number:27,photo:"https://www.jxscmachine.com/wp-content/uploads/2019/08/Cobalt-1.jpg",info:"Cobalt has coloured human civilisation for millennia. Today it stabilises cathode chemistry in lithium-ion cells, making it essential to every rechargeable battery.",fun:"Over 70% of world cobalt is mined in the Democratic Republic of the Congo.",stats:{"Atomic mass":"58.933 u","Density":"8.900 g/cm³","Melting point":"1 495 °C","Top producers":"DRC, Russia, Australia"}},
+                "Cuivre":{symbol:"Cu",number:29,photo:"https://cdn11.bigcommerce.com/s-zyp1gsevdp/images/stencil/1280x1280/products/1685/18881/nativecopper1_copy__23593.1713933495.jpg?c=2",info:"Copper has been worked by humans for over 10,000 years. Its extraordinary electrical and thermal conductivity make it irreplaceable in wiring, motors, and electronics.",fun:"The Statue of Liberty is clad in roughly 80 tonnes of copper, which oxidised over decades to create its iconic green patina.",stats:{"Atomic mass":"63.546 u","Density":"8.960 g/cm³","Melting point":"1 084 °C","Top producers":"Chile, Peru, China"}},
+                "Argent":{symbol:"Ag",number:47,photo:"https://img.freepik.com/photos-premium/minerai-argent-macro-pierres-precieuses-mines-argent_37753-250.jpg",info:"Silver holds the highest electrical and thermal conductivity of any element, making it irreplaceable in electronics, solar panels, and precision contacts.",fun:"The symbol Ag comes from 'argentum', the Latin for silver — which also gave Argentina its name.",stats:{"Atomic mass":"107.868 u","Density":"10.49 g/cm³","Melting point":"961.8 °C","Top producers":"Mexico, Peru, China"}},
+                "Aluminium":{symbol:"Al",number:13,photo:"https://upload.wikimedia.org/wikipedia/commons/5/5d/Aluminium-4.jpg",info:"Aluminium is the most abundant metal in Earth's crust. Today's electrolytic smelting makes it ubiquitous: packaging, aircraft frames, automotive bodies, and consumer electronics.",fun:"Recycling aluminium requires only 5% of the energy needed to smelt it from bauxite.",stats:{"Atomic mass":"26.982 u","Density":"2.700 g/cm³","Melting point":"660.3 °C","Top producers":"China, India, Russia"}}
+            };
+            const data=content[e.name]||{symbol:e.s||"?",number:e.n||"",photo:"",info:"Analysis in progress.",fun:"No notable fact.",stats:{}};
+            modal.innerHTML=`
+                <span class="modal-close" onclick="document.getElementById('modal').style.display='none'">[CLOSE]</span>
+                <div id="modal-content">
+                    <div class="modal-left">
+                        <div class="modal-symbol-bg">${data.symbol}</div>
+                        <div class="modal-atomic">Element No. ${data.number}</div>
+                        <h1 class="modal-title">${e.name}</h1>
+                        <div class="modal-symbol-inline">${data.symbol}</div>
+                        <p class="modal-body-text">${data.info}</p>
+                        <div class="modal-stats">${Object.entries(data.stats).map(([k,v])=>`<div class="modal-stat"><div class="modal-stat-label">${k}</div><div class="modal-stat-value">${v}</div></div>`).join('')}</div>
+                        <div class="modal-funfact"><div class="modal-funfact-label">Fun fact</div><div class="modal-funfact-text">${data.fun}</div></div>
+                    </div>
+                    <div class="modal-right">
+                        <img class="metal-photo" id="modal-photo" src="${data.photo}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" alt="${e.name}">
+                        <div class="modal-right-fallback" style="display:none;"><span>${data.symbol}</span></div>
+                        <div class="modal-map-overlay" id="mini-map-box" onclick="openMapOverlay()">
+                            <div id="mini-map" style="width:100%;height:100%;position:absolute;inset:0;"></div>
+                            <div class="modal-map-overlay-label">Mines — Click to enlarge</div>
+                        </div>
+                        <div class="modal-size-slider">
+                            <label>Size</label>
+                            <input type="range" min="30" max="100" value="100" step="1" oninput="const pct=this.value;this.nextElementSibling.textContent=pct+'%';const img=document.getElementById('modal-photo');if(pct==100){img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';}else{const p=pct+'%';img.style.cssText='position:absolute;inset:0;margin:auto;width:'+p+';height:'+p+';object-fit:contain;display:block;';}">
+                            <span>100%</span>
+                        </div>
+                    </div>
+                </div>`;
+            modal.style.display="block";
+            setTimeout(()=>drawMap("mini-map",e.name,false),80);
+        }
+
+        /* ═══════════ TABLEAU PÉRIODIQUE ═══════════ */
+        fetch('data.json').then(r=>r.json()).then(data=>{
+            const table=document.getElementById("periodic-table");
+            const keep=["Lithium","Nickel","Cobalt","Cuivre","Aluminium","Argent"];
+            data.elements.filter(e=>keep.includes(e.name)).forEach(e=>{
+                const div=document.createElement("div");
+                div.className="el";
+                div.style.setProperty("--accent", ELEMENT_COLORS[e.name] || "#999");
+                div.innerHTML=`
+                    <div class="el-top">
+                        <span class="el-number">#${e.n}</span>
+                        <strong class="el-symbol">${e.s}</strong>
+                    </div>
+                    <div class="el-name">${e.name}</div>
+                `;
+                div.onclick=()=>{
+                    document.querySelectorAll('.el').forEach(el=>el.classList.remove('active'));
+                    div.classList.add('active');
+                    showInfo(e);
+                };
+                table.appendChild(div);
+            });
+        });
+
+        /* ═══════════ INIT ═══════════ */
+        d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(data=>{
+            countries=topojson.feature(data,data.objects.countries).features;
+            initMap();
+        });
+
+        document.addEventListener("keydown",e=>{
+            if(e.key==="Escape"){closeMapOverlay();closeAbout();document.getElementById("modal").style.display="none";}
+        });
+
+        window.addEventListener("resize",()=>{
+            if(!metalsVisible&&countries)initMap();
+        });
+    </script>
+</body>
+</html>

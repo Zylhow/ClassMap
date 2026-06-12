@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Strategic Analysis: Portugal [PT]</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <style>
+        body { margin: 0; background: #050505; color: white; font-family: 'Segoe UI', sans-serif; display: flex; overflow: hidden; height: 100vh; }
+        
+        /* Left statistics panel - Fixed at 460px */
+        #data-panel {
+            width: 460px; min-width: 460px; background: rgba(10, 10, 10, 0.98);
+            border-right: 1px solid rgba(255, 75, 75, 0.4); padding: 40px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            z-index: 10; overflow-y: auto; box-sizing: border-box;
+            position: relative;
+        }
+
+        h1 { color: #ff4b4b; text-transform: uppercase; letter-spacing: 5px; font-size: 1.4rem; margin-bottom: 30px; border-left: 4px solid #ff4b4b; padding-left: 15px; margin-top: 0; }
+        
+        .stat-item { margin-bottom: 25px; }
+        .rank-badge { 
+            display: inline-block; background: #ff4b4b; color: black; 
+            font-size: 0.65rem; font-weight: bold; padding: 2px 8px; 
+            border-radius: 3px; margin-left: 10px; vertical-align: middle;
+            text-transform: uppercase;
+        }
+
+        .stat-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; }
+        .stat-value { font-size: 2rem; font-weight: 200; margin-top: 8px; color: #f8fafc; }
+        
+        .bar-bg { width: 100%; height: 5px; background: #1a1a1a; margin-top: 15px; border-radius: 2px; }
+        .bar-fill { height: 100%; transition: width 1.5s ease-out; box-shadow: 0 0 15px rgba(255, 75, 75, 0.4); }
+
+        /* Visual Intelligence Section */
+        .visual-intel {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 75, 75, 0.03);
+            border: 1px dashed rgba(255, 75, 75, 0.2);
+        }
+        .intel-img {
+            width: 100%; height: 120px;
+            background-image: url('https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=600&q=80');
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #ff4b4b;
+            filter: grayscale(1) sepia(1) hue-rotate(-50deg);
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        .intel-desc { font-size: 0.65rem; color: #94a3b8; font-style: italic; line-height: 1.4; }
+
+        .back-btn { margin-top: 30px; color: #ff4b4b; text-decoration: none; border: 1px solid #ff4b4b; 
+                    padding: 12px; text-align: center; text-transform: uppercase; letter-spacing: 2px; font-size: 0.75rem; background: rgba(255, 75, 75, 0.05); }
+        .back-btn:hover { background: #ff4b4b; color: black; box-shadow: 0 0 25px #ff4b4b; }
+
+        /* Map container - Occupies the remaining space on the right */
+        #map-container { flex-grow: 1; height: 100%; z-index: 1; background: radial-gradient(circle at center, #1a0808 0%, #050505 100%); position: relative; }
+        canvas { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 40px rgba(255, 75, 75, 0.2)); cursor: crosshair; }
+
+        /* Interactive Pop-up */
+        #mine-popup {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8); 
+            width: 440px; 
+            height: 180px; 
+            align-items: center;
+            pointer-events: auto;
+            animation: popIn 0.2s ease-out;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        #popup-img { width: 190px; height: 100%; object-fit: cover; background: #111; }
+        
+        .popup-content { flex: 1; padding: 20px; color: #1a1a1a; position: relative; }
+        .popup-title { margin: 0 0 8px 0; color: #ff4b4b; text-transform: uppercase; font-size: 1rem; font-weight: bold; }
+        .popup-desc { margin: 0; font-size: 0.85rem; line-height: 1.4; color: #444; }
+        
+        .close-popup { position: absolute; top: 10px; right: 10px; border: none; background: none; cursor: pointer; font-size: 1.2rem; color: #ccc; }
+        .close-popup:hover { color: #ff4b4b; }
+    </style>
+</head>
+<body>
+
+    <div id="data-panel">
+        <div>
+            <h1>PORTUGAL [PT]</h1>
+            
+            <div class="stat-item">
+                <div class="stat-label">LITHIUM RESERVES <span class="rank-badge">1ST IN EUROPE</span></div>
+                <div class="stat-value">60,000<span style="font-size: 1rem; color:#ff4b4b; margin-left:5px">Tons</span></div>
+                <div class="bar-bg"><div class="bar-fill" style="width: 95%; background: #ff4b4b;"></div></div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-label">COPPER PRODUCTION <span class="rank-badge">2ND IN EUROPE</span></div>
+                <div class="stat-value">130,000<span style="font-size: 1rem; color:#ff4b4b; margin-left:5px">Tons/year</span></div>
+                <div class="bar-bg"><div class="bar-fill" style="width: 75%; background: #c53030;"></div></div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-label">TIN MINING <span class="rank-badge">PROMINENT</span></div>
+                <div class="stat-value">620<span style="font-size: 1rem; color:#ff4b4b; margin-left:5px">Tons/year</span></div>
+                <div class="bar-bg"><div class="bar-fill" style="width: 40%; background: #8e1d1d;"></div></div>
+            </div>
+
+            <div class="visual-intel">
+                <div class="stat-label" style="font-size: 0.6rem; margin-bottom: 8px;">Terrain Intelligence: Iberian Pyrite Belt</div>
+                <div class="intel-img"></div>
+                <div class="intel-desc">A vast metallogenic province hosting massive sulfide deposits, making the Portuguese subsoil one of Western Europe's most coveted mining ecosystems.</div>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-btn">Return to System</a>
+    </div>
+
+    <div id="map-container">
+        <canvas id="zoom-map"></canvas>
+        <div id="mine-popup">
+            <img id="popup-img" src="">
+            <div class="popup-content">
+                <button class="close-popup" onclick="document.getElementById('mine-popup').style.display='none'">✕</button>
+                <div id="popup-title" class="popup-title"></div>
+                <div id="popup-desc" class="popup-desc"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("zoom-map");
+        const ctx = canvas.getContext("2d");
+        const container = document.getElementById("map-container");
+        const popup = document.getElementById("mine-popup");
+
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+
+        // --- STRATEGIC SITES OF PORTUGAL ---
+        const minesData = [
+            { 
+                name: "Covas do Barroso Mine (Li)", 
+                coords: [-7.98, 41.63], 
+                img: "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=400&q=80", 
+                desc: "Located in Boticas, it is one of Europe's most critical hard-rock (spodumene) lithium projects, essential for European battery supply chain autonomy." 
+            }
+        ];
+
+        let interactivePoints = [];
+
+        d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(data => {
+            const countries = topojson.feature(data, data.objects.countries).features;
+            const country = countries.find(d => Number(d.id) === 620);
+            
+            // NORMAL AND PROPORTIONAL ZOOM: 
+            // We leave a comfort padding (60px) so the country can breathe without hitting the canvas edges.
+            const padding = 60;
+            
+            // Using Transverse Mercator projection (ideal for north-south elongated countries like Portugal)
+            // and applying .fitExtent() directly on the actual country shape to avoid any distortion.
+            const projection = d3.geoTransverseMercator()
+                .rotate([-9, 0]) // Centered on Portugal's longitude
+                .fitExtent(
+                    [[padding, padding], [canvas.width - padding, canvas.height - padding]], 
+                    country
+                );
+            
+            const path = d3.geoPath().projection(projection).context(ctx);
+
+            // Render country (Continental Portugal renders at its regular aspect ratio within the free space)
+            ctx.fillStyle = "#0d0d0d"; ctx.beginPath(); path(country); ctx.fill();
+            ctx.strokeStyle = "#ff4b4b"; ctx.lineWidth = 1.5; ctx.beginPath(); path(country); ctx.stroke();
+
+            // Clear rendering of the Covas do Barroso location point
+            minesData.forEach(m => {
+                const p = projection(m.coords);
+                if (p) {
+                    ctx.fillStyle = "#ff4b4b"; ctx.shadowBlur = 15; ctx.shadowColor = "#ff4b4b";
+                    ctx.beginPath(); ctx.arc(p[0], p[1], 6, 0, Math.PI * 2); ctx.fill();
+
+                    ctx.shadowBlur = 0; ctx.fillStyle = "rgba(148, 163, 184, 0.9)";
+                    ctx.font = "bold 12px 'Segoe UI'";
+                    ctx.fillText(m.name, p[0] + 15, p[1] + 4);
+
+                    interactivePoints.push({ x: p[0], y: p[1], data: m });
+                }
+            });
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const point = interactivePoints.find(p => Math.sqrt((mouseX - p.x)**2 + (mouseY - p.y)**2) < 20);
+
+            if (point) {
+                document.getElementById("popup-img").src = point.data.img;
+                document.getElementById("popup-title").innerText = point.data.name;
+                document.getElementById("popup-desc").innerText = point.data.desc;
+
+                popup.style.display = 'flex';
+                
+                let left = e.clientX + 40;
+                let top = e.clientY - 90;
+
+                if (left + 440 > window.innerWidth) left = e.clientX - 480;
+                if (top < 10) top = 10;
+                if (top + 180 > window.innerHeight) top = window.innerHeight - 190;
+
+                popup.style.left = left + 'px';
+                popup.style.top = top + 'px';
+            } else {
+                popup.style.display = 'none';
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>
