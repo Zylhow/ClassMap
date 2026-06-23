@@ -2,7 +2,7 @@ name: Deploy Next.js to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # Change this to "master" if your default branch uses that name
+    branches: ["react_app"] # Change this to "master" if your default branch uses that name
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
