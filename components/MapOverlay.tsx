@@ -41,8 +41,9 @@ export default function MapOverlay({ elementName, onClose }: MapOverlayProps) {
       const world = await d3.json<any>("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
       if (cancelled) return;
 
-      const countries = topojson.feature(world, world.objects.countries).features;
-
+      // Force 'any' on the topojson.feature result to bypass the type check
+      const countries = (topojson.feature(world, world.objects.countries) as any).features;
+      
       // ── Même projection / état de zoom-pan que WorldMap (mode flat) ──
       const projection = d3.geoMercator().scale(w / 6.2).translate([w / 2, h / 1.5]);
       const path = d3.geoPath().projection(projection).context(ctx);

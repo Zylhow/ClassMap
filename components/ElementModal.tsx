@@ -36,8 +36,8 @@ function MiniMap({ elementName }: { elementName: string }) {
       const world = await d3.json<any>("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
       if (cancelled || !ref.current) return;
 
-      const countries = topojson.feature(world, world.objects.countries).features;
-      const proj = d3.geoMercator().scale(w / 6.2).translate([w / 2, h / 1.5]);
+      // Force 'any' on the topojson.feature result to bypass the type check
+      const countries = (topojson.feature(world, world.objects.countries) as any).features;      const proj = d3.geoMercator().scale(w / 6.2).translate([w / 2, h / 1.5]);
       const path = d3.geoPath().projection(proj);
 
       const svg = d3.select(container).append("svg")

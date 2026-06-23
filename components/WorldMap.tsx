@@ -65,8 +65,8 @@ export default function WorldMap() {
       const world = await d3.json<any>("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
       if (cancelled) return;
 
-      const countries = topojson.feature(world, world.objects.countries).features;
-      const graticule = d3.geoGraticule10();
+      // Force 'any' on the topojson.feature result to bypass the type check
+      const countries = (topojson.feature(world, world.objects.countries) as any).features;      const graticule = d3.geoGraticule10();
 
       // ── Flat-map projection state ──
       const flatProjection = d3.geoMercator().scale(w / 6.2).translate([w / 2, h / 1.5]);
