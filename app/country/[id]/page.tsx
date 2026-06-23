@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getCountryById } from "@/lib/data";
+import { getCountryById, ELEMENT_COLORS } from "@/lib/data";
+import Navbar from "@/components/Navbar";
 
 interface Mine {
   name: string;
@@ -17,11 +18,49 @@ interface PopupData {
   y: number;
 }
 
+interface GalleryState {
+  mines: Mine[];
+  index: number;
+}
+
+const SYMBOL_TO_ELEMENT: Record<string, string> = {
+  Li: "Lithium", Ni: "Nickel", Co: "Cobalt", Cu: "Copper", Ag: "Silver", Al: "Aluminium",
+};
+
+function getElementFromMineName(name: string): string {
+  const match = name.match(/\(([^)]+)\)/);
+  if (!match) return "Copper";
+  const codes = match[1].split("/");
+  for (const code of codes) {
+    if (SYMBOL_TO_ELEMENT[code.trim()]) return SYMBOL_TO_ELEMENT[code.trim()];
+  }
+  return "Copper";
+}
+
+const backBtnStyle: React.CSSProperties = {
+  display: "block",
+  marginTop: 28,
+  color: "#111",
+  textDecoration: "none",
+  border: "0.5px solid #ddd",
+  padding: 12,
+  textAlign: "center",
+  textTransform: "uppercase",
+  letterSpacing: "0.1em",
+  fontSize: 11,
+  background: "#fff",
+  cursor: "pointer",
+  width: "100%",
+  boxSizing: "border-box",
+  transition: "background 0.15s, color 0.15s",
+};
+
 export default function CountryPage() {
   const params = useParams();
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [popup, setPopup] = useState<PopupData | null>(null);
+  const [gallery, setGallery] = useState<GalleryState | null>(null);
 
   const id = Number(params.id);
   const country = getCountryById(id);
@@ -41,11 +80,13 @@ export default function CountryPage() {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d")!;
       const container = canvas.parentElement!;
-      
-      const w = container.offsetWidth;
-      const h = container.offsetHeight;
+
+      const w = container.clientWidth;
+      const h = container.clientHeight;
       canvas.width = w;
       canvas.height = h;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
 
       const world = await d3.json<any>("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
       if (cancelled || !canvasRef.current) return;
@@ -55,106 +96,111 @@ export default function CountryPage() {
       );
       if (!feature) return;
 
-      // Base projection framed beautifully inside the viewport
-      const projection = d3.geoMercator().fitExtent(
-        [[60, 60], [w - 60, h - 60]],
-        feature
-      );
+      const projection = d3.geoMercator().fitExtent([[60, 60], [w - 60, h - 60]], feature);
       const path = d3.geoPath().projection(projection).context(ctx);
 
-      // Track active interactions globally within the effect context
       let interactivePoints: { x: number; y: number; mine: Mine }[] = [];
       let currentTransform = d3.zoomIdentity;
 
-      // Main Render loop called on every zoom/pan event
       function render(transform: any) {
         if (!canvas || !ctx) return;
         ctx.clearRect(0, 0, w, h);
-
         ctx.save();
-        // Move and scale the entire canvas landscape
         ctx.translate(transform.x, transform.y);
         ctx.scale(transform.k, transform.k);
 
-        // 1. Minimalist Grid Lines (Transforms with map view space)
         const gs = 50;
         ctx.strokeStyle = "#e8e6e2";
-        ctx.lineWidth = 0.5 / transform.k; // Keep line weight constant across scales
-        
-        // Dynamic broad bound calculations for grid generation
+        ctx.lineWidth = 0.5 / transform.k;
         const startX = Math.floor((-transform.x) / (gs * transform.k)) * gs - gs;
         const endX = startX + (w / transform.k) + gs * 2;
         const startY = Math.floor((-transform.y) / (gs * transform.k)) * gs - gs;
         const endY = startY + (h / transform.k) + gs * 2;
-
         for (let x = startX; x < endX; x += gs) { ctx.beginPath(); ctx.moveTo(x, startY); ctx.lineTo(x, endY); ctx.stroke(); }
         for (let y = startY; y < endY; y += gs) { ctx.beginPath(); ctx.moveTo(startX, y); ctx.lineTo(endX, y); ctx.stroke(); }
 
-        // 2. Render Country Polygon Geometry
         ctx.fillStyle = "#E0E0E0"; ctx.beginPath(); path(feature); ctx.fill();
         ctx.strokeStyle = "#000000"; ctx.lineWidth = 1.2 / transform.k; ctx.beginPath(); path(feature); ctx.stroke();
 
-        // 3. Render Strategic Asset Markers
         interactivePoints = [];
         country!.mines.forEach(m => {
           const p = projection(m.coords as [number, number]);
           if (!p) return;
-
-          // Scaled operational sizing matrix
           const s = 7 / transform.k;
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 2 / transform.k;
+          const elementName = getElementFromMineName(m.name);
+          const color = ELEMENT_COLORS[elementName] || "#000000";
+          const t = s * 0.55;
           ctx.lineCap = "round";
-          
-          // Draw minimal asset cross symbol
-          ctx.beginPath(); ctx.moveTo(p[0] - s, p[1] - s); ctx.lineTo(p[0] + s, p[1] + s); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(p[0] + s, p[1] - s); ctx.lineTo(p[0] - s, p[1] + s); ctx.stroke();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2 / transform.k;
 
-          // Typography Labels
-          ctx.fillStyle = "#111111"; 
+          switch (elementName) {
+            case "Aluminium":
+              ctx.strokeRect(p[0] - s, p[1] - s, s * 2, s * 2);
+              ctx.beginPath(); ctx.moveTo(p[0]-s, p[1]-s); ctx.lineTo(p[0]+s, p[1]+s); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(p[0]+s, p[1]-s); ctx.lineTo(p[0]-s, p[1]+s); ctx.stroke();
+              break;
+            case "Lithium":
+              ctx.beginPath(); ctx.moveTo(p[0], p[1]-s); ctx.lineTo(p[0]+s, p[1]); ctx.lineTo(p[0], p[1]+s); ctx.lineTo(p[0]-s, p[1]); ctx.closePath(); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(p[0], p[1]-s); ctx.lineTo(p[0], p[1]+s); ctx.stroke();
+              break;
+            case "Nickel":
+              ctx.beginPath(); ctx.arc(p[0], p[1], s, 0, Math.PI*2); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(p[0]-s, p[1]); ctx.lineTo(p[0]+s, p[1]); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(p[0], p[1]-s); ctx.lineTo(p[0], p[1]+s); ctx.stroke();
+              break;
+            case "Silver":
+              ctx.beginPath(); ctx.arc(p[0], p[1], s, 0, Math.PI*2); ctx.stroke();
+              break;
+            case "Copper":
+              ctx.beginPath(); ctx.arc(p[0], p[1], s, 0, Math.PI*2); ctx.stroke();
+              ctx.lineWidth = 1.2 / transform.k;
+              ctx.beginPath(); ctx.moveTo(p[0], p[1]-t); ctx.lineTo(p[0]+t, p[1]+t); ctx.lineTo(p[0]-t, p[1]+t); ctx.closePath(); ctx.stroke();
+              break;
+            case "Cobalt":
+              ctx.beginPath(); ctx.arc(p[0], p[1], s, 0, Math.PI*2); ctx.stroke();
+              ctx.lineWidth = 1.2 / transform.k;
+              ctx.beginPath(); ctx.arc(p[0], p[1], s*0.45, 0, Math.PI*2); ctx.stroke();
+              break;
+          }
+
+          ctx.fillStyle = "#111111";
           ctx.font = `${11 / transform.k}px system-ui, -apple-system, sans-serif`;
           ctx.fillText(m.name, p[0] + s + (6 / transform.k), p[1] + (4 / transform.k));
 
-          // Save coordinates transformed into screenspace matrix for click detection
-          const screenX = p[0] * transform.k + transform.x;
-          const screenY = p[1] * transform.k + transform.y;
-          interactivePoints.push({ x: screenX, y: screenY, mine: m });
+          const localX = p[0] * transform.k + transform.x;
+          const localY = p[1] * transform.k + transform.y;
+          interactivePoints.push({ x: localX, y: localY, mine: m });
         });
 
         ctx.restore();
       }
 
-      // Initialize the D3 Zoom behavior listener interface
       const zoomBehavior = d3.zoom<HTMLCanvasElement, unknown>()
-        .scaleExtent([0.5, 12]) // Zoom configuration context limits
+        .scaleExtent([0.5, 12])
         .on("zoom", (event) => {
           currentTransform = event.transform;
           render(currentTransform);
-          // Auto clear operational popup interface state on canvas shifts
           setPopup(null);
         });
 
       const d3Canvas = d3.select(canvas);
       d3Canvas.call(zoomBehavior);
-
-      // Trigger standard initial system render pathing
       render(d3.zoomIdentity);
 
       const handleClick = (e: MouseEvent) => {
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
-
-        // Trace hits against actual raw computed interface target elements
         const point = interactivePoints.find(p =>
           Math.sqrt((mx - p.x) ** 2 + (my - p.y) ** 2) < 20
         );
-
         if (point) {
-          const pw = 400;
-          const ph = 160;
-          const left = e.clientX + 20 + pw > window.innerWidth ? e.clientX - pw - 20 : e.clientX + 20;
-          const top = e.clientY - ph / 2;
+          const pw = 400, ph = 160;
+          const screenX = point.x + rect.left;
+          const screenY = point.y + rect.top;
+          const left = screenX + 20 + pw > window.innerWidth ? screenX - pw - 20 : screenX + 20;
+          const top = screenY - ph / 2;
           setPopup({ mine: point.mine, x: left, y: Math.max(52, top) });
         } else {
           setPopup(null);
@@ -162,7 +208,6 @@ export default function CountryPage() {
       };
 
       canvas.addEventListener("click", handleClick);
-      
       return () => {
         canvas.removeEventListener("click", handleClick);
         d3Canvas.on(".zoom", null);
@@ -176,10 +221,11 @@ export default function CountryPage() {
     };
   }, [id, country]);
 
-  // Escape key architecture window context integration
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPopup(null);
+      if (e.key === "Escape") { setPopup(null); setGallery(null); }
+      if (e.key === "ArrowRight") setGallery(g => g ? { ...g, index: (g.index + 1) % g.mines.length } : g);
+      if (e.key === "ArrowLeft")  setGallery(g => g ? { ...g, index: (g.index - 1 + g.mines.length) % g.mines.length } : g);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -195,20 +241,19 @@ export default function CountryPage() {
     );
   }
 
+  const heroImage = country.image || country.mines.find(m => m.img)?.img || "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=600&q=80";
+
   return (
     <div style={{ margin: 0, background: "#ffffff", color: "#111111", display: "flex", overflow: "hidden", height: "100vh", fontFamily: "system-ui, -apple-system, sans-serif" }}>
-      
-      {/* 450.html Navbar Component */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, height: 52, background: "#ffffff", borderBottom: "0.5px solid #ddd", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", zIndex: 1000, fontSize: 16, letterSpacing: "0.06em" }}>
-        <span style={{ color: "#111", fontWeight: 500 }}>Website</span>
-        <div style={{ display: "flex", gap: 32 }}>
-          <a onClick={() => router.push("/")} style={{ color: "#444", textDecoration: "none", cursor: "pointer", letterSpacing: "0.04em" }}>Metals</a>
-          <a onClick={() => router.push("/")} style={{ color: "#444", textDecoration: "none", cursor: "pointer", letterSpacing: "0.04em" }}>Map</a>
-          <a style={{ color: "#444", textDecoration: "none", cursor: "pointer", letterSpacing: "0.04em" }}>About</a>
-        </div>
-      </nav>
 
-      {/* 450.html Structured Data Panel */}
+      <Navbar
+        onToggleMetals={() => router.push("/")}
+        onShowMap={() => router.push("/#map")}
+        onOpenAbout={() => router.push("/about")}
+        forcedActive="map"
+      />
+
+      {/* Side panel */}
       <div style={{
         width: 420, minWidth: 420, background: "#ffffff",
         borderRight: "0.5px solid #ddd", padding: "80px 36px 36px",
@@ -239,10 +284,9 @@ export default function CountryPage() {
             </div>
           ))}
 
-          {/* Asset Overview Container */}
           <div style={{ marginTop: 24, padding: 16, border: "0.5px solid #ddd", background: "#fafafa" }}>
-            <div style={{ fontSize: 10, letterSpacing: "0.14em", color: "#aaa", textTransform: "uppercase", marginBottom: 10 }}>Asset Overview — Overview</div>
-            <div style={{ width: "100%", height: 140, backgroundImage: "url('https://images.unsplash.com/photo-1596496660144-8d9600a00908?auto=format&fit=crop&w=600&q=80')", backgroundSize: "cover", backgroundPosition: "center", marginBottom: 10 }} />
+            <div style={{ fontSize: 10, letterSpacing: "0.14em", color: "#aaa", textTransform: "uppercase", marginBottom: 10 }}>Asset Overview</div>
+            <div style={{ width: "100%", height: 180, backgroundImage: `url('${heroImage}')`, backgroundSize: "cover", backgroundPosition: "center", marginBottom: 10 }} />
             <div style={{ fontSize: 11, color: "#888", lineHeight: 1.65 }}>{country.description}</div>
           </div>
         </div>
@@ -252,11 +296,11 @@ export default function CountryPage() {
         </button>
       </div>
 
-      {/* Map View Frame */}
+      {/* Map */}
       <div style={{ flexGrow: 1, height: "100%", zIndex: 1, background: "#f5f4f2", position: "relative", paddingTop: 52, boxSizing: "border-box" }}>
-        <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", cursor: "crosshair" }} />
+        <canvas ref={canvasRef} style={{ display: "block", cursor: "crosshair" }} />
 
-        {/* 450.html Light Popup Modal */}
+        {/* Popup */}
         {popup && (
           <div style={{
             position: "fixed", zIndex: 1000, background: "white", border: "0.5px solid #ddd",
@@ -269,7 +313,12 @@ export default function CountryPage() {
               <img
                 src={popup.mine.img}
                 alt={popup.mine.name}
-                style={{ width: 160, height: "100%", objectFit: "cover", background: "#eee", flexShrink: 0 }}
+                onClick={() => {
+                  const minesWithImg = country.mines.filter(m => m.img);
+                  const idx = minesWithImg.findIndex(m => m.name === popup.mine.name);
+                  setGallery({ mines: minesWithImg, index: idx >= 0 ? idx : 0 });
+                }}
+                style={{ width: 160, height: "100%", objectFit: "cover", background: "#eee", flexShrink: 0, cursor: "zoom-in" }}
                 onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
               />
             )}
@@ -277,9 +326,7 @@ export default function CountryPage() {
               <button
                 onClick={() => setPopup(null)}
                 style={{ position: "absolute", top: 2, right: 10, border: "none", background: "none", cursor: "pointer", fontSize: "1.2rem", color: "#aaa" }}
-              >
-                ✕
-              </button>
+              >✕</button>
               <div style={{ margin: "0 0 6px", fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: "#111" }}>
                 {popup.mine.name}
               </div>
@@ -289,6 +336,104 @@ export default function CountryPage() {
             </div>
           </div>
         )}
+
+        {/* Gallery */}
+        {gallery && (() => {
+          const mine = gallery.mines[gallery.index];
+          const total = gallery.mines.length;
+          return (
+            <div
+              onClick={() => setGallery(null)}
+              style={{
+                position: "fixed", inset: 0, zIndex: 2000,
+                background: "rgba(0,0,0,0.75)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  background: "#fff", width: 600, maxWidth: "90vw",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+                  position: "relative", overflow: "hidden",
+                }}
+              >
+                <div style={{
+                  padding: "14px 20px", borderBottom: "0.5px solid #ddd",
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "0.9rem", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                      {mine.name}
+                    </div>
+                    {total > 1 && (
+                      <div style={{ fontSize: "0.72rem", color: "#999", marginTop: 2 }}>
+                        {gallery.index + 1} / {total}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setGallery(null)}
+                    style={{ border: "none", background: "none", cursor: "pointer", fontSize: "1.3rem", color: "#aaa", lineHeight: 1 }}
+                  >✕</button>
+                </div>
+
+                <div style={{ position: "relative", background: "#111" }}>
+                  <img
+                    src={mine.img}
+                    alt={mine.name}
+                    style={{ width: "100%", height: 340, objectFit: "cover", display: "block" }}
+                    onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  />
+                  {total > 1 && (
+                    <>
+                      <button
+                        onClick={() => setGallery(g => g ? { ...g, index: (g.index - 1 + total) % total } : g)}
+                        style={{
+                          position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+                          background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer",
+                          width: 36, height: 36, fontSize: "1.1rem", display: "flex",
+                          alignItems: "center", justifyContent: "center",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        }}
+                      >‹</button>
+                      <button
+                        onClick={() => setGallery(g => g ? { ...g, index: (g.index + 1) % total } : g)}
+                        style={{
+                          position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                          background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer",
+                          width: 36, height: 36, fontSize: "1.1rem", display: "flex",
+                          alignItems: "center", justifyContent: "center",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        }}
+                      >›</button>
+                    </>
+                  )}
+                </div>
+
+                <div style={{ padding: "14px 20px", fontSize: "0.8rem", color: "#555", lineHeight: 1.6 }}>
+                  {mine.desc}
+                </div>
+
+                {total > 1 && (
+                  <div style={{ display: "flex", justifyContent: "center", gap: 6, paddingBottom: 14 }}>
+                    {gallery.mines.map((_, i) => (
+                      <div
+                        key={i}
+                        onClick={() => setGallery(g => g ? { ...g, index: i } : g)}
+                        style={{
+                          width: 6, height: 6, borderRadius: "50%", cursor: "pointer",
+                          background: i === gallery.index ? "#111" : "#ddd",
+                          transition: "background 0.2s",
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       <style>{`
@@ -304,21 +449,3 @@ export default function CountryPage() {
     </div>
   );
 }
-
-const backBtnStyle: React.CSSProperties = {
-  display: "block",
-  marginTop: 28,
-  color: "#111",
-  textDecoration: "none",
-  border: "0.5px solid #ddd",
-  padding: 12,
-  textAlign: "center",
-  textTransform: "uppercase",
-  letterSpacing: "0.1em",
-  fontSize: 11,
-  background: "#fff",
-  cursor: "pointer",
-  width: "100%",
-  boxSizing: "border-box",
-  transition: "background 0.15s, color 0.15s",
-};

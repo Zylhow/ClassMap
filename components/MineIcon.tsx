@@ -1,7 +1,7 @@
 // Pure SVG icon shapes used consistently across WorldMap, drawMap, and Legend.
 // Keeps icon logic in one place instead of copy-pasting across files.
 
-export type ElementName = "Lithium" | "Nickel" | "Cobalt" | "Cuivre" | "Argent" | "Aluminium";
+export type ElementName = "Lithium" | "Nickel" | "Cobalt" | "Copper" | "Silver" | "Aluminium";
 
 interface MineIconProps {
   elementName: string;
@@ -29,20 +29,21 @@ export function MineIconGroup({ elementName, color, size = 7, x = 0, y = 0 }: Mi
       );
       break;
     case "Lithium":
-      shapes = <polygon points={`0,${-s} ${s},${s} ${-s},${s}`} {...common} />;
+      shapes = <polygon points={`0,${-s} ${s},0 0,${s} ${-s},0`} {...common} />;
       break;
     case "Nickel":
       shapes = (
         <>
-          <polygon points={`0,${-s} ${s},0 0,${s} ${-s},0`} {...common} />
-          <line x1={0} y1={-s * 0.45} x2={0} y2={s * 0.45} {...common} />
+          <circle r={s} {...common} />
+          <line x1={-s} y1={0} x2={s} y2={0} {...common} />
+          <line x1={0} y1={-s} x2={0} y2={s} {...common} />
         </>
       );
       break;
-    case "Argent":
+    case "Silver":
       shapes = <circle r={s} {...common} />;
       break;
-    case "Cuivre":
+    case "Copper":
       shapes = (
         <>
           <circle r={s} {...common} />

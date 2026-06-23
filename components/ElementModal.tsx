@@ -65,10 +65,10 @@ function MiniMap({ elementName }: { elementName: string }) {
         const t = s * 0.55;
         switch (elementName) {
           case "Aluminium": g.append("rect").attr("x",-s).attr("y",-s).attr("width",s*2).attr("height",s*2).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",-s).attr("y1",-s).attr("x2",s).attr("y2",s).attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",s).attr("y1",-s).attr("x2",-s).attr("y2",s).attr("stroke",color).attr("stroke-width",sw); break;
-          case "Lithium":   g.append("polygon").attr("points",`0,${-s} ${s},${s} ${-s},${s}`).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); break;
-          case "Nickel":    g.append("polygon").attr("points",`0,${-s} ${s},0 0,${s} ${-s},0`).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",0).attr("y1",-s*0.45).attr("x2",0).attr("y2",s*0.45).attr("stroke",color).attr("stroke-width",sw); break;
-          case "Argent":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); break;
-          case "Cuivre":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("polygon").attr("points",`0,${-t} ${t},${t} ${-t},${t}`).attr("fill","none").attr("stroke",color).attr("stroke-width",1.2); break;
+case "Lithium":   g.append("polygon").attr("points",`0,${-s} ${s},0 0,${s} ${-s},0`).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",0).attr("y1",-s).attr("x2",0).attr("y2",s).attr("stroke",color).attr("stroke-width",sw); break;
+          case "Nickel":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",-s).attr("y1",0).attr("x2",s).attr("y2",0).attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",0).attr("y1",-s).attr("x2",0).attr("y2",s).attr("stroke",color).attr("stroke-width",sw); break;
+          case "Silver":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); break;
+          case "Copper":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("polygon").attr("points",`0,${-t} ${t},${t} ${-t},${t}`).attr("fill","none").attr("stroke",color).attr("stroke-width",1.2); break;
           case "Cobalt":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("circle").attr("r",s*0.45).attr("fill","none").attr("stroke",color).attr("stroke-width",1.2); break;
         }
       });

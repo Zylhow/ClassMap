@@ -7,8 +7,8 @@ const DISPLAYED_ELEMENTS = [
   { s: "Li", n: 3,  name: "Lithium" },
   { s: "Ni", n: 28, name: "Nickel" },
   { s: "Co", n: 27, name: "Cobalt" },
-  { s: "Cu", n: 29, name: "Cuivre" },
-  { s: "Ag", n: 47, name: "Argent" },
+  { s: "Cu", n: 29, name: "Copper" },
+  { s: "Ag", n: 47, name: "Silver" },
   { s: "Al", n: 13, name: "Aluminium" },
 ];
 
@@ -21,24 +21,20 @@ export default function PeriodicTable({ activeElement, onSelect }: PeriodicTable
   return (
     <div
       style={{
-        position: "fixed", inset: "52px 0 0 0", background: "#f8f9fb",
-        overflowY: "auto", zIndex: 50,
+        position: "fixed", inset: "52px 0 0 0",
+        background: 
+          "linear-gradient(90deg, #e8e6e2 0.5px, transparent 0.5px), linear-gradient(#e8e6e2 0.5px, transparent 0.5px), #ffffff",
+        backgroundSize: "120px 120px",
+        overflowY: "auto", zIndex: 50, borderTop: "0.5px solid #ddd",
       }}
     >
-      <h2 style={{ fontSize: 11, letterSpacing: "0.14em", color: "#999", textTransform: "uppercase", padding: "28px 28px 8px", margin: 0 }}>
-        TABLEAU PÉRIODIQUE DES RESSOURCES CRITIQUES
-      </h2>
-      <p style={{ fontSize: "0.95rem", color: "#555", maxWidth: 760, lineHeight: 1.6, padding: "0 28px 24px", margin: 0 }}>
-        Cliquez sur un métal pour explorer ses mines, ses usages et sa place stratégique dans la transition énergétique.
-      </p>
-
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gridAutoRows: "minmax(160px, auto)",
-          gap: 18, padding: "0 28px 28px",
-          maxWidth: 1140, margin: "0 auto",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gridAutoRows: "auto",
+          gap: 16, padding: "40px 28px 28px",
+          maxWidth: 560, margin: "0 auto",
         }}
       >
         {DISPLAYED_ELEMENTS.map(el => {
@@ -49,30 +45,31 @@ export default function PeriodicTable({ activeElement, onSelect }: PeriodicTable
               key={el.name}
               onClick={() => onSelect(el.name)}
               style={{
-                position: "relative",
                 display: "flex", flexDirection: "column", justifyContent: "space-between",
-                minHeight: 170, padding: "18px 20px",
-                color: "#fff", borderRadius: 20,
-                border: `1px solid ${isActive ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.12)"}`,
-                background: "linear-gradient(135deg, rgba(15,20,30,0.95) 0%, rgba(30,35,50,0.98) 100%)",
-                boxShadow: isActive ? "0 28px 70px rgba(5,10,25,0.25)" : "0 20px 45px rgba(5,10,25,0.12)",
+                minHeight: 140, padding: "16px 18px",
+                color: "#111", borderRadius: 8,
+                border: `1px solid ${isActive ? accent : "#ddd"}`,
+                background: "#ffffff",
+                boxShadow: isActive ? `0 2px 8px rgba(0,0,0,0.08)` : "none",
                 overflow: "hidden", cursor: "pointer",
-                transition: "transform 0.25s ease, box-shadow 0.25s ease",
-                ["--accent" as string]: accent,
+                transition: "border-color 0.2s ease, box-shadow 0.2s ease",
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px) scale(1.02)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; }}
+              onMouseEnter={e => { 
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = accent;
+                el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)";
+              }}
+              onMouseLeave={e => { 
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = isActive ? accent : "#ddd";
+                el.style.boxShadow = isActive ? "0 2px 8px rgba(0,0,0,0.08)" : "none";
+              }}
             >
-              {/* top accent stripe */}
-              <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 4, background: accent, borderRadius: 999, pointerEvents: "none" }} />
-              {/* radial highlight */}
-              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at top right, rgba(255,255,255,0.14), transparent 40%)", opacity: 0.55, pointerEvents: "none" }} />
-
-              <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "flex-start", gap: 10 }}>
-                <span style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.72)", letterSpacing: "0.18em", textTransform: "uppercase" }}>#{el.n}</span>
-                <strong style={{ fontSize: "3rem", lineHeight: 0.9, letterSpacing: "-0.06em" }}>{el.s}</strong>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+                <span style={{ fontSize: "0.7rem", color: "#999", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>#{el.n}</span>
+                <strong style={{ fontSize: "2.2rem", lineHeight: 0.9, letterSpacing: "-0.04em", color: accent }}>{el.s}</strong>
               </div>
-              <div style={{ position: "relative", zIndex: 1, marginTop: 16, fontSize: "1rem", fontWeight: 600, letterSpacing: "0.02em", color: "#f8f8ff" }}>
+              <div style={{ fontSize: "0.95rem", fontWeight: 500, letterSpacing: "0.01em", color: "#111" }}>
                 {el.name}
               </div>
             </div>

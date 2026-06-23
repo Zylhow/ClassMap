@@ -1,11 +1,15 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 interface AboutDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
 export default function AboutDrawer({ open, onClose }: AboutDrawerProps) {
+  const router = useRouter();
+
   return (
     <>
       {open && (
@@ -29,10 +33,38 @@ export default function AboutDrawer({ open, onClose }: AboutDrawerProps) {
             [close]
           </button>
         </div>
-        <div style={{ padding: "28px 24px", overflowY: "auto", flex: 1 }}>
-          <p style={{ fontSize: 12, lineHeight: 1.85, color: "#555", letterSpacing: "0.02em", margin: 0 }}>
-            Cette application explore le côté caché des énergies renouvelables — les minéraux critiques qui les rendent possibles, les mines qui les extraient, et les pays qui en dépendent.
+        <div style={{ padding: "28px 24px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column" }}>
+          <p style={{ fontSize: 12, lineHeight: 1.85, color: "#555", letterSpacing: "0.02em", margin: "0 0 18px" }}>
+            This application explores the hidden side of renewable energy — the critical minerals that make it possible, the mines that extract them, and the countries that depend on them.
           </p>
+          <p style={{ fontSize: 12, lineHeight: 1.85, color: "#555", letterSpacing: "0.02em", margin: "0 0 18px" }}>
+            Click on an element (Lithium, Nickel, Cobalt, Copper, Silver, Aluminium) to discover its properties, where it is mined around the world, and why it matters for the energy transition.
+          </p>
+          <p style={{ fontSize: 12, lineHeight: 1.85, color: "#555", letterSpacing: "0.02em", margin: "0 0 28px" }}>
+            Click on a country on the map to see its production rankings, key reserves, and the strategic mining sites located within its borders.
+          </p>
+          <button
+            onClick={() => { onClose(); router.push("/about"); }}
+            style={{
+              marginTop: "auto",
+              padding: "10px 0",
+              background: "none",
+              border: "0.5px solid #ccc",
+              cursor: "pointer",
+              fontSize: 11,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "#333",
+              fontFamily: "inherit",
+              fontWeight: 600,
+              width: "100%",
+              transition: "background 0.18s, color 0.18s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "#111"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "none"; (e.currentTarget as HTMLButtonElement).style.color = "#333"; }}
+          >
+            Learn more →
+          </button>
         </div>
       </div>
     </>

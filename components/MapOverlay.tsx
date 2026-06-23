@@ -9,98 +9,221 @@ interface MapOverlayProps {
 }
 
 export default function MapOverlay({ elementName, onClose }: MapOverlayProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (!elementName || !ref.current) return;
+    if (!elementName || !containerRef.current || !canvasRef.current) return;
     let cancelled = false;
 
-    async function draw() {
+    async function init() {
       const [d3, topojson] = await Promise.all([
         import("d3"),
         // @ts-ignore
         import("topojson-client"),
       ]);
-      if (cancelled || !ref.current) return;
+      if (cancelled) return;
 
-      const container = ref.current;
-      container.innerHTML = "";
+      const container = containerRef.current!;
+      const canvas = canvasRef.current!;
+      const ctx = canvas.getContext("2d")!;
+
       const w = container.clientWidth || window.innerWidth;
-      const h = container.clientHeight || window.innerHeight - 40;
-      const color = ELEMENT_COLORS[elementName] || "#000";
-      const mines = MINES[elementName] || [];
+      const h = container.clientHeight || window.innerHeight;
+      canvas.width = w;
+      canvas.height = h;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+
+      const color = ELEMENT_COLORS[elementName!] || "#000";
+      const mines = MINES[elementName!] || [];
 
       const world = await d3.json<any>("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
-      if (cancelled || !ref.current) return;
+      if (cancelled) return;
 
       const countries = topojson.feature(world, world.objects.countries).features;
-      const proj = d3.geoMercator().scale(w / 6.2).translate([w / 2, h / 1.5]);
-      const path = d3.geoPath().projection(proj);
 
-      const svg = d3.select(container).append("svg")
-        .attr("width", w).attr("height", h)
-        .style("display", "block").style("width", "100%").style("height", "100%");
+      // ── Même projection / état de zoom-pan que WorldMap (mode flat) ──
+      const projection = d3.geoMercator().scale(w / 6.2).translate([w / 2, h / 1.5]);
+      const path = d3.geoPath().projection(projection).context(ctx);
 
-      svg.append("rect").attr("width", w).attr("height", h).attr("fill", "#ffffff");
+      let flatScale = 1, flatPosX = 0, flatPosY = 0, flatVelX = 0, flatVelY = 0;
+      let isDragging = false, lastMouseX = 0, lastMouseY = 0;
+      let startX = 0, startY = 0;
+      let hovered: any = null;
 
-      const gs = 80;
-      for (let x = 0; x < w; x += gs) svg.append("line").attr("x1", x).attr("y1", 0).attr("x2", x).attr("y2", h).attr("stroke", "#e8e6e2").attr("stroke-width", 0.5);
-      for (let y = 0; y < h; y += gs) svg.append("line").attr("x1", 0).attr("y1", y).attr("x2", w).attr("y2", y).attr("stroke", "#e8e6e2").attr("stroke-width", 0.5);
+      // SVG overlay pour les icônes des mines (au-dessus du canvas)
+      const existing = container.querySelector("#overlay-icons-svg");
+      if (existing) existing.remove();
+      const iconsSvg = d3.select(container).append("svg")
+        .attr("id", "overlay-icons-svg")
+        .style("position", "absolute").style("inset", "0").style("pointer-events", "none")
+        .attr("width", w).attr("height", h);
 
-      svg.selectAll("path.country").data(countries).enter().append("path")
-        .attr("class", "country").attr("d", path as any)
-        .attr("fill", "#E0E0E0").attr("stroke", "#000").attr("stroke-width", 0.5);
-
-      // Tooltip element
+      // Tooltip
       const tooltip = document.createElement("div");
       tooltip.style.cssText = "position:fixed;background:#fff;border:0.5px solid #ddd;font-size:0.78rem;padding:0;border-radius:4px;pointer-events:none;display:none;z-index:99999;max-width:220px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.12);";
       document.body.appendChild(tooltip);
 
-      mines.forEach(mine => {
-        const pt = proj([mine.lng, mine.lat]);
-        if (!pt) return;
-        const [px, py] = pt;
+      function buildIcons() {
+        iconsSvg.selectAll("*").remove();
         const s = 9;
-        const sw = 1.5;
-        const t = s * 0.55;
-        const g = svg.append("g").attr("transform", `translate(${px},${py})`).style("cursor", "pointer");
+        mines.forEach(mine => {
+          const g = iconsSvg.append("g")
+            .style("pointer-events", "all").style("cursor", "pointer")
+            .attr("data-lng", mine.lng).attr("data-lat", mine.lat);
 
-        switch (elementName) {
-          case "Aluminium": g.append("rect").attr("x",-s).attr("y",-s).attr("width",s*2).attr("height",s*2).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",-s).attr("y1",-s).attr("x2",s).attr("y2",s).attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",s).attr("y1",-s).attr("x2",-s).attr("y2",s).attr("stroke",color).attr("stroke-width",sw); break;
-          case "Lithium":   g.append("polygon").attr("points",`0,${-s} ${s},${s} ${-s},${s}`).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); break;
-          case "Nickel":    g.append("polygon").attr("points",`0,${-s} ${s},0 0,${s} ${-s},0`).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("x1",0).attr("y1",-s*0.45).attr("x2",0).attr("y2",s*0.45).attr("stroke",color).attr("stroke-width",sw); break;
-          case "Argent":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); break;
-          case "Cuivre":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("polygon").attr("points",`0,${-t} ${t},${t} ${-t},${t}`).attr("fill","none").attr("stroke",color).attr("stroke-width",1.2); break;
-          case "Cobalt":    g.append("circle").attr("r",s).attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("circle").attr("r",s*0.45).attr("fill","none").attr("stroke",color).attr("stroke-width",1.2); break;
+          const sw = 1.5;
+          const t = s * 0.55;
+          switch (elementName) {
+            case "Aluminium": g.append("rect").attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("stroke",color).attr("stroke-width",sw).attr("class","diag1"); g.append("line").attr("stroke",color).attr("stroke-width",sw).attr("class","diag2"); break;
+            case "Lithium":   g.append("polygon").attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("stroke",color).attr("stroke-width",sw).attr("class","lith-line"); break;
+            case "Nickel":    g.append("circle").attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("line").attr("stroke",color).attr("stroke-width",sw).attr("class","cross1"); g.append("line").attr("stroke",color).attr("stroke-width",sw).attr("class","cross2"); break;
+            case "Silver":    g.append("circle").attr("fill","none").attr("stroke",color).attr("stroke-width",sw); break;
+            case "Copper":    g.append("circle").attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("polygon").attr("fill","none").attr("stroke",color).attr("stroke-width",1.2); break;
+            case "Cobalt":    g.append("circle").attr("fill","none").attr("stroke",color).attr("stroke-width",sw); g.append("circle").attr("fill","none").attr("stroke",color).attr("stroke-width",1.2); break;
+          }
+
+          const label = iconsSvg.append("text")
+            .attr("fill", "#111").attr("font-size", "11px")
+            .style("pointer-events", "none")
+            .attr("data-label-for", mine.name)
+            .text(mine.name);
+
+          g.append("circle").attr("r", s + 4).attr("fill", "transparent");
+          g.datum({ lng: mine.lng, lat: mine.lat, s });
+
+          g.on("mouseover", function() {
+            tooltip.style.display = "block";
+            tooltip.innerHTML = mine.img
+              ? `<img style="width:220px;height:120px;object-fit:cover;display:block;" src="${mine.img}" onerror="this.style.display='none'" alt="${mine.name}"><div style="padding:8px 12px 10px"><b>${mine.name}</b><br>${mine.country}${mine.output ? "<br>Production : " + mine.output : ""}</div>`
+              : `<div style="width:220px;height:120px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.08em">${mine.name}</div><div style="padding:8px 12px 10px"><b>${mine.name}</b><br>${mine.country}${mine.output ? "<br>Production : " + mine.output : ""}</div>`;
+          }).on("mousemove", function(event: MouseEvent) {
+            const tw = 220, th = mine.img ? 180 : 155;
+            const left = event.clientX + 16 + tw > window.innerWidth ? event.clientX - tw - 10 : event.clientX + 16;
+            const top = event.clientY - 10 + th > window.innerHeight ? event.clientY - th - 10 : event.clientY - 10;
+            tooltip.style.left = left + "px"; tooltip.style.top = top + "px";
+          }).on("mouseout", function() { tooltip.style.display = "none"; });
+        });
+        updateIconsTransform();
+      }
+
+      function updateIconsTransform() {
+        const s = 9;
+        iconsSvg.selectAll<SVGGElement, { lng: number; lat: number; s: number }>("g[data-lng]").each(function(d) {
+          if (!d) return;
+          const rawPt = projection([d.lng, d.lat]);
+          const g = d3.select(this);
+          if (!rawPt) { g.style("display", "none"); return; }
+          g.style("display", null);
+
+          const x = rawPt[0] * flatScale + flatPosX;
+          const y = rawPt[1] * flatScale + flatPosY;
+
+          g.attr("transform", `translate(${x},${y})`);
+
+          switch (elementName) {
+            case "Aluminium": g.select("rect").attr("x",-s).attr("y",-s).attr("width",s*2).attr("height",s*2); g.select(".diag1").attr("x1",-s).attr("y1",-s).attr("x2",s).attr("y2",s); g.select(".diag2").attr("x1",s).attr("y1",-s).attr("x2",-s).attr("y2",s); break;
+            case "Lithium":   g.select("polygon").attr("points",`0,${-s} ${s},0 0,${s} ${-s},0`); g.select(".lith-line").attr("x1",0).attr("y1",-s).attr("x2",0).attr("y2",s); break;
+            case "Nickel":    g.select("circle").attr("r",s); g.select(".cross1").attr("x1",-s).attr("y1",0).attr("x2",s).attr("y2",0); g.select(".cross2").attr("x1",0).attr("y1",-s).attr("x2",0).attr("y2",s); break;
+            case "Silver":    g.select("circle").attr("r",s); break;
+            case "Copper":    { const circles=g.selectAll("circle"); circles.attr("r",s); const t=s*0.55; g.select("polygon").attr("points",`0,${-t} ${t},${t} ${-t},${t}`); break; }
+            case "Cobalt":    { const cs=g.selectAll("circle"); cs.filter((_d,i)=>i===0).attr("r",s); cs.filter((_d,i)=>i===1).attr("r",s*0.45); break; }
+          }
+
+          iconsSvg.select(`text[data-label-for="${CSS.escape(mineNameOf(d))}"]`)
+            .attr("x", x + s + 6).attr("y", y + 4);
+        });
+      }
+
+      function mineNameOf(d: { lng: number; lat: number }) {
+        const m = mines.find(m => m.lng === d.lng && m.lat === d.lat);
+        return m ? m.name : "";
+      }
+
+      buildIcons();
+
+      function drawFlat() {
+        flatPosX += flatVelX; flatPosY += flatVelY;
+        flatVelX *= 0.92; flatVelY *= 0.92;
+        flatPosX = Math.max(-w * (flatScale - 1), Math.min(0, flatPosX));
+        flatPosY = Math.max(-h * (flatScale - 1), Math.min(0, flatPosY));
+
+        ctx.save(); ctx.translate(flatPosX, flatPosY); ctx.scale(flatScale, flatScale);
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, h);
+
+        ctx.strokeStyle = "#e8e6e2"; ctx.lineWidth = 0.5 / flatScale;
+        for (let x = 0; x < w; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+        for (let y = 0; y < h; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+        countries.forEach((d: any) => {
+          ctx.beginPath(); path(d);
+          ctx.fillStyle = (hovered && d.id === hovered.id) ? "#C8C8C8" : "#E0E0E0";
+          ctx.fill(); ctx.strokeStyle = "#000000"; ctx.lineWidth = 0.5 / flatScale; ctx.stroke();
+        });
+        ctx.restore();
+      }
+
+      function draw() {
+        if (cancelled) return;
+        ctx.clearRect(0, 0, w, h);
+        drawFlat();
+        updateIconsTransform();
+        requestAnimationFrame(draw);
+      }
+
+      // ── Mêmes interactions que WorldMap (drag + inertie + wheel zoom centré sur le curseur) ──
+      canvas.onmousedown = (e) => {
+        isDragging = true; startX = e.clientX; startY = e.clientY;
+        lastMouseX = e.clientX; lastMouseY = e.clientY;
+        canvas.style.cursor = "grabbing";
+      };
+
+      const onMouseUp = () => {
+        isDragging = false;
+        canvas.style.cursor = "grab";
+      };
+      window.addEventListener("mouseup", onMouseUp);
+
+      const onMouseMove = (e: MouseEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        if (isDragging) {
+          flatVelX = (e.clientX - lastMouseX) * 0.8;
+          flatVelY = (e.clientY - lastMouseY) * 0.8;
+          lastMouseX = e.clientX; lastMouseY = e.clientY;
         }
+        const p = projection.invert!([(e.clientX - rect.left - flatPosX) / flatScale, (e.clientY - rect.top - flatPosY) / flatScale]);
+        if (p) hovered = countries.find((c: any) => d3.geoContains(c, p)) || null;
+        if (!isDragging) canvas.style.cursor = hovered ? "pointer" : "grab";
+      };
+      window.addEventListener("mousemove", onMouseMove);
 
-        // invisible hit area
-        g.append("circle").attr("r", s + 4).attr("fill", "transparent");
+      canvas.onwheel = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        flatVelX = 0; flatVelY = 0;
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left, mouseY = e.clientY - rect.top;
+        const pointX = (mouseX - flatPosX) / flatScale, pointY = (mouseY - flatPosY) / flatScale;
+        const factor = e.deltaY > 0 ? 0.92 : 1.08;
+        const newScale = Math.max(1, Math.min(flatScale * factor, 8));
+        flatPosX = mouseX - pointX * newScale; flatPosY = mouseY - pointY * newScale; flatScale = newScale;
+      };
 
-        // label
-        svg.append("text").attr("x", px + s + 6).attr("y", py + 4).attr("fill", "#111").attr("font-size", "11px").style("pointer-events", "none").text(mine.name);
+      draw();
 
-        g.on("mouseover", function(event: MouseEvent) {
-          tooltip.style.display = "block";
-          tooltip.innerHTML = mine.img
-            ? `<img style="width:220px;height:120px;object-fit:cover;display:block;" src="${mine.img}" onerror="this.style.display='none'" alt="${mine.name}"><div style="padding:8px 12px 10px"><b>${mine.name}</b><br>${mine.country}${mine.output ? "<br>Production : " + mine.output : ""}</div>`
-            : `<div style="width:220px;height:120px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.08em">${mine.name}</div><div style="padding:8px 12px 10px"><b>${mine.name}</b><br>${mine.country}${mine.output ? "<br>Production : " + mine.output : ""}</div>`;
-        }).on("mousemove", function(event: MouseEvent) {
-          const tw = 220, th = mine.img ? 180 : 155;
-          const left = event.clientX + 16 + tw > window.innerWidth ? event.clientX - tw - 10 : event.clientX + 16;
-          const top = event.clientY - 10 + th > window.innerHeight ? event.clientY - th - 10 : event.clientY - 10;
-          tooltip.style.left = left + "px"; tooltip.style.top = top + "px";
-        }).on("mouseout", function() { tooltip.style.display = "none"; });
-      });
-
-      // Cleanup tooltip on unmount
-      return () => { tooltip.remove(); };
+      return () => {
+        window.removeEventListener("mouseup", onMouseUp);
+        window.removeEventListener("mousemove", onMouseMove);
+        tooltip.remove();
+        iconsSvg.remove();
+      };
     }
 
-    const cleanup = draw();
+    const cleanupPromise = init();
     return () => {
       cancelled = true;
-      cleanup?.then(fn => fn && fn());
+      cleanupPromise.then(fn => fn && fn());
     };
   }, [elementName]);
 
@@ -122,8 +245,8 @@ export default function MapOverlay({ elementName, onClose }: MapOverlayProps) {
           [CLOSE]
         </button>
       </div>
-      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-        <div ref={ref} style={{ position: "absolute", inset: 0 }} />
+      <div ref={containerRef} style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+        <canvas ref={canvasRef} style={{ cursor: "grab", display: "block" }} />
       </div>
     </div>
   );

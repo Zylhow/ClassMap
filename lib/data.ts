@@ -3,8 +3,8 @@ export const ELEMENT_COLORS: Record<string, string> = {
   Lithium:   "#4A90D9",
   Nickel:    "#2EAF7D",
   Cobalt:    "#E05C8A",
-  Cuivre:    "#E8813A",
-  Argent:    "#9B6DD6",
+  Copper:    "#E8813A",
+  Silver:    "#9B6DD6",
   Aluminium: "#C9A227",
 };
 
@@ -18,46 +18,95 @@ export interface Mine {
   img: string;
 }
 
+const PLACEHOLDER = (name: string) =>
+  `https://placehold.co/640x360/263238/eeeeee?text=${encodeURIComponent(name)}`;
+
 export const MINES: Record<string, Mine[]> = {
+  
   Lithium: [
-    { name: "Salar de Atacama", lat: -23.5, lng: -68.2,  country: "Chili",       output: "140 000 t/an", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Lithium_brine_pools_in_the_Atacama_Desert.jpg/640px-Lithium_brine_pools_in_the_Atacama_Desert.jpg" },
-    { name: "Greenbushes",      lat: -33.8, lng:  116.0, country: "Australie",   output: "80 000 t/an",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Talison_Lithium_Greenbushes_mine_2012.jpg/640px-Talison_Lithium_Greenbushes_mine_2012.jpg" },
-    { name: "Salar de Uyuni",   lat: -20.1, lng: -67.5,  country: "Bolivie",     output: "estimé",       img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Salar_de_Uyuni%2C_Bolivia_%282%29.jpg/640px-Salar_de_Uyuni%2C_Bolivia_%282%29.jpg" },
-    { name: "Silver Peak",      lat:  37.7, lng: -117.6, country: "États-Unis",  output: "6 000 t/an",   img: "" },
-    { name: "Bikita",           lat: -20.9, lng:   32.8, country: "Zimbabwe",    output: "2 000 t/an",   img: "" },
+    { name: "Greenbushes Mine",           lat: -33.869, lng:  116.063, country: "Australie",  output: "1 400 000 t/year", img: "https://a.storyblok.com/f/287943243085208/c87716240e/bm-greenbushes-1.jpg" },
+    { name: "Salar de Atacama",           lat: -23.535, lng:  -68.261, country: "Chili",      output: "180 000 t/year", img: "https://dialogue.earth/content/uploads/2020/10/Chile-lithium-scaled.jpg" },
+    { name: "Jiajika Mine",               lat:  30.296, lng:  101.302, country: "Chine",      output: "~150 000 t/year", img: "https://assets.bizclikmedia.net/553/100de3d941422c914c76192f06e0b389:c82d7427b4bb7ae95a60d72d882fea7c/lithiummine-1-jpeg.webp" },
+    { name: "Bikita Mine",                lat: -20.963, lng:   31.427, country: "Zimbabwe",   output: "2 000 t/year", img: "https://img.yicaiglobal.com/src/image/2022/02/19524468847673344.jpg" },
+    { name: "Salar de Olaroz",            lat: -23.474, lng:  -66.666, country: "Argentine",  output: "25 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROh_wudpoUP42SEv75u0x3u7eBOfEuHtpcIw&s" },
+    { name: "Grota do Cirilo (Sigma Li)", lat: -16.701, lng:  -41.893, country: "Brésil",     output: "270 000 t/year", img: "https://www.mining-technology.com/wp-content/uploads/sites/19/2020/02/Image-1-Grota-do-Corilo-Lithium-Project.jpg" },
+    { name: "Thacker Pass",               lat:  41.708, lng: -118.055, country: "États-Unis", output: "40 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSKUSYctn2LvbJPFOV_QRnS7Lgq8C5nr991Q&s" },
+    { name: "Mina do Barroso",            lat:  41.705, lng:   -7.786, country: "Portugal",   output: "27 000 t/year", img: "https://www.geota.pt/storage/app/media/noticias/2021/2021-07-16/mina%20do%20barroso_001.jpeg" },
+    { name: "Salar de Uyuni",             lat: -20.134, lng:  -67.489, country: "Bolivie",    output: "~15 000 t/year", img: "https://static.nationalgeographic.fr/files/styles/image_3200/public/re%CC%81sume%CC%81_fe%CC%81vrier2019_lithium.jpg?w=1900&h=1425" },
+    { name: "Silver Peak",                lat:  37.751, lng: -117.637, country: "États-Unis", output: "6 000 t/year", img: "https://cdn.prod.website-files.com/5fb173c4176306108ceab3b2/63e3128bb9ea271564ef1410_N%C2%B0TLISII01.webp" },
   ],
   Nickel: [
-    { name: "Norilsk",       lat:  69.3, lng:  88.2, country: "Russie",    output: "200 000 t/an", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Norilsk_Mining_Plant.jpg/640px-Norilsk_Mining_Plant.jpg" },
-    { name: "Sudbury",       lat:  46.5, lng: -81.0, country: "Canada",    output: "50 000 t/an",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Sudbury_superstack.jpg/640px-Sudbury_superstack.jpg" },
-    { name: "Sorowako",      lat:  -2.5, lng: 121.4, country: "Indonésie", output: "78 000 t/an",  img: "" },
-    { name: "Cerro Matoso",  lat:   7.6, lng: -75.5, country: "Colombie",  output: "44 000 t/an",  img: "" },
-    { name: "Thompson Mine", lat:  55.7, lng: -97.8, country: "Canada",    output: "30 000 t/an",  img: "" },
+    { name: "Weda Bay Mine",             lat:   0.474, lng:  127.993, country: "Indonésie",   output: "~400 000 t/year", img: "https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iLd.64JywQpk/v0/-1x-1.webp" },
+    { name: "Rio Tuba Mine",             lat:   8.570, lng:  117.419, country: "Philippines", output: "~80 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeXKOaZg8LRXjpIl7oe4w6gkUuyuBhg8pfYA&s" },
+    { name: "Oktyabrskoye Mine",         lat:  69.524, lng:   88.340, country: "Russie",      output: "200 000 t/year", img: "https://gmk.center/wp-content/uploads/2022/07/DBK3S3S8-jsG.jpg" },
+    { name: "Voisey's Bay Mine",         lat:  56.334, lng:  -62.103, country: "Canada",      output: "~25 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBEgHndHKCq69nd0KUlW4rzQJvI4YjEhHVLQ&s" },
+    { name: "Jinchuan Nickel Mine",      lat:  38.472, lng:  102.183, country: "Chine",       output: "~15 000 t/year", img: "https://prod.cdn-medias.africabusinessplus.com/medias/2025/12/12/ab20251212-rdc-chinoi-jinchuan-mine-1.jpg" },
+    { name: "Cosmos Nickel Mine",        lat: -27.598, lng:  120.576, country: "Australie",   output: "~9 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw-b0B_Wa5X6EdzKN-EnKI5NhMSgrckhhDMA&s" },
+    { name: "Goro Mine / New Caledonia", lat: -22.308, lng:  167.010, country: "France",      output: "~40 000 t/year", img: "https://www.hatchperformanceinnovations.com/wp-content/uploads/2024/10/proj-04-02-1.webp" },
+    { name: "Santa Rita Mine",           lat: -14.176, lng:  -39.713, country: "Brésil",      output: "~15 000 t/year", img: "https://im-mining.com/site/wp-content/uploads/2020/09/mira123-SantaRita.jpg" },
+    { name: "Eagle Mine",                lat:  46.748, lng:  -87.882, country: "États-Unis",  output: "~17 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1fwtdypJ43St-SBHPR6HU5mPxRzagSoJGZA&s" },
+    { name: "Sorowako Mine",             lat:  -2.537, lng:  121.365, country: "Indonésie",   output: "78 000 t/year", img: "https://images.squarespace-cdn.com/content/v1/6336e7d5cd3efd295dcd9a4a/1677520854935-0EHP695549WYXH7AZCXG/Sorowako+Mines.jpeg" },
+    { name: "Sudbury Basin",             lat:  46.490, lng:  -81.011, country: "Canada",      output: "50 000 t/year", img: "https://www.northernminer.com/wp-content/uploads/2014/09/1003247955-1003258425-700x437.jpg" },
+    { name: "Cerro Matoso",              lat:   7.602, lng:  -75.536, country: "Colombie",    output: "44 000 t/year", img: "https://cloudfront-us-east-1.images.arcpublishing.com/infobae/BRCZHWJE3ZCYJG2SMJLGDO4NKU.png" },
+    { name: "Thompson Mine",             lat:  55.744, lng:  -97.855, country: "Canada",      output: "30 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-A0Qaf3xg1Gwq4OW-ruIsrHOAkmmazrXl5g&s" },
   ],
   Cobalt: [
-    { name: "Tenke Fungurume", lat: -10.5, lng:  26.1, country: "RDC",        output: "15 000 t/an", img: "https://media.lesechos.com/api/v1/images/view/6400ba01444d9840f463f25d/1280x720/0703510707775-web-tete.jpg" },
-    { name: "Mutanda Mine",    lat:  -8.0, lng:  23.9, country: "RDC",        output: "25 000 t/an", img: "https://deskeco.com/sites/default/files/styles/1024x578/public/2019-10/Mine-5.jpg?itok=qOPF8glo" },
-    { name: "Bou Azzer",       lat:  30.5, lng:  -6.5, country: "Maroc",      output: "2 200 t/an",  img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Bou_Azzer_2013b.jpg/1280px-Bou_Azzer_2013b.jpg" },
-    { name: "Ambatovy",        lat: -18.9, lng:  48.4, country: "Madagascar", output: "3 500 t/an",  img: "" },
-    { name: "Cobalt, Ontario", lat:  47.4, lng: -79.7, country: "Canada",     output: "historique",  img: "" },
+    { name: "Kolwezi Mine",               lat: -10.728, lng:  25.456, country: "RD Congo",     output: "~20 000 t/year", img: "https://s.abcnews.com/images/International/congo-mine-1-gty-ps-230206_1675708395663_hpMain_16x9_992.jpg" },
+    { name: "Karakul Deposit",            lat:  49.912, lng:  89.543, country: "Russie",       output: "—", img: "https://www.mining-technology.com/wp-content/uploads/sites/19/2017/10/1-image-21.jpg" },
+    { name: "Castle Mine",                lat:  47.676, lng: -80.741, country: "Canada",       output: "—", img: "https://nmrs.org.uk/wp-content/uploads/2024/11/castle2.jpg" },
+    { name: "Moa Joint Venture",          lat:  20.642, lng: -74.903, country: "Cuba",         output: "~3 500 t/year", img: "https://cisp.cachefly.net/assets/articles/images/resized/0001044556_resized_nickelcobaltmoajvcubasherritt1120211022.jpg" },
+    { name: "Broken Hill Cobalt Project", lat: -35.088, lng: 141.197, country: "Australie",    output: "—", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzDL_KWcQty0s4zInr05gKV3cF2J7OAZUTBQ&s" },
+    { name: "Ramu Mine",                  lat:  -5.572, lng: 145.207, country: "PNG",          output: "~3 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQOnALeWhqn43jni6RCmvlvufr_FIOD6X9AQ&s" },
+    { name: "Ambatovy Mine",              lat: -18.845, lng:  48.308, country: "Madagascar",   output: "3 500 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIciHrDP1Qe8Dza96f6FmCr78nhYonemopFQ&s" },
+    { name: "Bou-Azzer Mine",             lat:  30.518, lng:  -6.913, country: "Maroc",        output: "2 200 t/year", img: "https://cisp.cachefly.net/assets/articles/images/resized/0001100624_resized_managembouazzercabaltminemorocco1022.jpg" },
+    { name: "Nkomati Mine",               lat: -25.600, lng:  30.800, country: "Afrique du S.", output: "~2 200 t/year (Close 2021)", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5EccFnv987jv9vlZswssagBeeImTkX8JjPg&s" },
+    { name: "Tenke Fungurume",            lat: -10.523, lng:  26.098, country: "RD Congo",     output: "15 000 t/year", img: "https://deskeco.com/sites/default/files/styles/1024x578/public/2022-07/Usine%20Tenke%20Fungurume.png?itok=CrfdSvnl" },
+    { name: "Mutanda Mine",               lat:  -8.021, lng:  23.936, country: "RD Congo",     output: "25 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBHI7tltlnYlHsp-xFCQgEfkp2nrI1nuUL5g&s" },
   ],
-  Cuivre: [
-    { name: "Escondida",    lat: -24.3, lng:  -69.1, country: "Chili",      output: "1 200 000 t/an", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Minera_Escondida%2C_Chile.jpg/640px-Minera_Escondida%2C_Chile.jpg" },
-    { name: "Morenci",      lat:  33.1, lng: -109.4, country: "États-Unis", output: "450 000 t/an",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Morenci_Copper_Mine_Arizona.jpg/640px-Morenci_Copper_Mine_Arizona.jpg" },
-    { name: "Grasberg",     lat:  -4.1, lng:  137.1, country: "Indonésie",  output: "350 000 t/an",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Grasberg_mine.jpg/640px-Grasberg_mine.jpg" },
-    { name: "Collahuasi",   lat: -20.9, lng:  -68.6, country: "Chili",      output: "470 000 t/an",   img: "" },
-    { name: "Chuquicamata", lat: -22.3, lng:  -68.9, country: "Chili",      output: "400 000 t/an",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Chuquicamata_Chile_Kupfermine.jpg/640px-Chuquicamata_Chile_Kupfermine.jpg" },
-    { name: "Olympic Dam",  lat: -30.4, lng:  136.9, country: "Australie",  output: "200 000 t/an",   img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Olympic_Dam_Smelter.jpg/640px-Olympic_Dam_Smelter.jpg" },
+  Copper: [
+    { name: "Escondida Mine",         lat: -24.272, lng:  -69.068, country: "Chili",      output: "1 347 000 t/year", img: "https://www.miningdoc.tech/wp-content/uploads/2024/12/Escondida-1-898x575.webp" },
+    { name: "El Teniente",            lat: -34.085, lng:  -70.349, country: "Chili",      output: "~350 000 t/year", img: "https://latinamericareports.com/wp-content/uploads/2025/08/unnamed.jpg" },
+    { name: "Kamoa-Kakula",           lat: -10.800, lng:   26.900, country: "RD Congo",   output: "386 000 t/year", img: "https://im-mining.com/site/wp-content/uploads/2020/09/63350_6e9d6712f44748ed_024full-Kamoa-Kakula.jpg" },
+    { name: "Antamina Mine",          lat:  -9.554, lng:  -77.049, country: "Pérou",      output: "368 000 t/year", img: "https://www.teck.com/media/1600x9999//Operations-T1-16-Teck-Antamina-Panorama-Mining-Pit-Night-Evening-1280x500-2015.jpg" },
+    { name: "Dexing Copper Mine",     lat:  29.016, lng:  117.729, country: "Chine",      output: "~150 000 t/year", img: "https://static.independent.co.uk/2025/09/24/7/33/Dexing-Copper-Mine-an-open-pit-copper-mine-in-Dexing-in-Chinas-central-Jiangxi-province.jpeg?crop=3626.7,2720,x226.7,y170&width=1200&height=900" },
+    { name: "Morenci Mine",           lat:  33.091, lng: -109.367, country: "États-Unis", output: "313 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mZgKfYONGdEh_Rz_qijyNUQoD0vpd_3DFQ&s" },
+    { name: "Grasberg Mine",          lat:  -4.058, lng:  137.108, country: "Indonésie",  output: "460 000 t/year", img: "https://www.mining.com/wp-content/uploads/2025/10/grasberg.jpg" },
+    { name: "Udokan Mine",            lat:  56.591, lng:  118.417, country: "Russie",     output: "~125 000 t/year (foreseen)", img: "https://cdnuploads.aa.com.tr/uploads/enerjiterminali/Contents/2023/09/11/thumbs_b_c_e11076da72ce90a34a8b03263b5b4bf4.jpg?v=174109" },
+    { name: "Olympic Dam Mine",       lat: -30.486, lng:  136.891, country: "Australie",  output: "200 000 t/year", img: "https://www.mining-technology.com/wp-content/uploads/sites/19/2017/10/1-olympic-dam.jpg" },
+    { name: "Aktogay Mine",           lat:  46.958, lng:   79.943, country: "Kazakhstan", output: "~130 000 t/year", img: "https://www.kazminerals.com/app/uploads/2025/08/aktogay-home.jpg" },
+    { name: "Buenavista Mine",        lat:  30.961, lng: -110.331, country: "Mexique",    output: "207 000 t/year", img: "https://npr.brightspotcdn.com/dims4/default/8fbb9b4/2147483647/strip/true/crop/1500x1000+0+0/resize/880x587!/quality/90/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Flegacy%2Fs3fs-public%2FPueblosMagicos9.jpg" },
+    { name: "Highland Valley Copper", lat:  50.500, lng: -121.000, country: "Canada",     output: "~130 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2DEEd4KM3H7GtaCJ12G_HV8TPqbzurr6SEQ&s" },
+    { name: "Rudna Mine (Cu)",        lat:  51.520, lng:   16.050, country: "Pologne",    output: "~120 000 t/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2sREaSrbRdsKoRazGBArFyKP5Lpfz1u9mng&s" },
+    { name: "Malanjkhand Mine",       lat:  22.070, lng:   81.050, country: "Inde",       output: "~35 000 t/year", img: "https://bl-i.thgim.com/public/incoming/b0l66p/article66153163.ece/alternates/FREE_1200/hindustan-copper.jpg" },
+    { name: "Collahuasi",             lat: -20.908, lng:  -68.625, country: "Chili",      output: "404 000 t/year", img: "https://www.mining-outlook.com/media/Collahuasi-Sector-Concentradora-Ujina-jpg.webp" },
+    { name: "Chuquicamata",           lat: -22.312, lng:  -68.909, country: "Chili",      output: "400 000 t/year", img: "https://i.redd.it/e4ygt3hbs8k21.jpg" },
+    { name: "Oyu Tolgoi (Cu/Au)",     lat:  42.947, lng:  106.847, country: "Mongolie",   output: "345 000 t/year", img: "" },
+    { name: "Quellaveco (Cu)",        lat: -16.893, lng:  -70.532, country: "Pérou",      output: "310 000 t/year", img: "" },
+    { name: "Los Pelambres (Cu)",     lat: -31.817, lng:  -70.557, country: "Chili",      output: "295 000 t/year", img: "" },
   ],
   Aluminium: [
-    { name: "Weipa (bauxite)", lat: -12.7, lng: 141.9, country: "Australie", output: "35 Mt/an", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Weipa_bauxite_mine.jpg/640px-Weipa_bauxite_mine.jpg" },
-    { name: "Sangarédi",       lat:  11.9, lng: -13.8, country: "Guinée",    output: "18 Mt/an", img: "" },
-    { name: "Trombetas (MRN)", lat:  -1.5, lng: -56.4, country: "Brésil",   output: "18 Mt/an", img: "" },
+    { name: "Weipa Bauxite Mine",      lat: -12.677, lng:  141.921, country: "Australie", output: "35 Mt/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJpxmnb_I_-hpl8omEwq1w3oAEzt3dXuSlvw&s" },
+    { name: "Sangarédi Mine",          lat:  11.919, lng:  -13.826, country: "Guinée",    output: "18 Mt/year", img: "https://ejatlas.org/media/conflict/bauxite-mining-boke-guinea/sangaredi_mine_aerial_view.jpg" },
+    { name: "Trombetas MRN",           lat:  -1.492, lng:  -56.373, country: "Brésil",    output: "18 Mt/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjr6HAZ6UUwnqpz4pc5p5BczXSMtrwP42ZYQ&s" },
+    { name: "Damanjodi Bauxite Mine",  lat:  18.820, lng:   82.750, country: "Inde",      output: "~7 Mt/year", img: "https://www.alcircle.com/api/media/1765243560.53675_NALCO_bauxite_facility_0_0.jpg" },
+    { name: "Krasnaya Shapochka Mine", lat:  60.198, lng:   59.973, country: "Russie",    output: "~2 Mt/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeX9iy8wrQRMbCkSK3bzJ3j_6lwZQdnvC4ng&s" },
   ],
-  Argent: [
-    { name: "Fresnillo",  lat:  23.2, lng: -102.9, country: "Mexique",   output: "53 Moz/an", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Fresnillo_mine.jpg/640px-Fresnillo_mine.jpg" },
-    { name: "Cannington", lat: -22.8, lng:  140.7, country: "Australie", output: "16 Moz/an", img: "" },
-    { name: "Antamina",   lat:  -9.5, lng:  -77.1, country: "Pérou",     output: "12 Moz/an", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Antamina_mine.jpg/640px-Antamina_mine.jpg" },
-    { name: "Peñasquito", lat:  24.9, lng: -101.7, country: "Mexique",   output: "17 Moz/an", img: "" },
+  Silver: [
+    { name: "Peñasquito Mine",             lat:  24.914, lng: -101.710, country: "Mexique",    output: "33 Moz/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoR8ZB5D0phNtmyPnA-MS2HjTIB3oIKr22yQ&s" },
+    { name: "Juanicipio Mine (Ag)",        lat:  23.030, lng: -102.770, country: "Mexique",    output: "18.6 Moz/year", img: "" },
+    { name: "Fankou Mine",                 lat:  24.740, lng:  113.760, country: "Chine",      output: "~10 Moz/year", img: "https://im-mining.com/site/wp-content/uploads/2023/04/CMP-Fankou.jpg" },
+    { name: "Uchucchacua Mine",            lat: -10.720, lng:  -76.550, country: "Pérou",      output: "~6 Moz/year", img: "https://slowcarfasthouse.com/wp-content/uploads/2019/08/andes-mining-operation-in-the-andes.jpg" },
+    { name: "Polkowice-Sieroszowice (Ag)", lat:  51.510, lng:   16.080, country: "Pologne",    output: "~40 Moz/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStzUdQTBFPc6jQvWLJMDf-69YVnAHBlIYmzw&s" },
+    { name: "San Cristobal Mine",          lat: -21.116, lng:  -67.208, country: "Bolivie",    output: "~10 Moz/year", img: "https://im-mining.com/site/wp-content/uploads/2019/07/Minera-San-Cristobal-Sumitomo-Corporation.jpg" },
+    { name: "Dukat Mine",                  lat:  60.500, lng:  152.500, country: "Russie",     output: "14.6 Moz/year", img: "https://photos.wikimapia.org/p/00/00/62/21/38_big.jpg" },
+    { name: "Greens Creek Mine",           lat:  58.098, lng: -134.560, country: "États-Unis", output: "~8 Moz/year", img: "https://media.ktoo.org/wp-content/uploads/2024/11/3R3A8681-1.jpg" },
+    { name: "Cannington Mine",             lat: -21.869, lng:  140.923, country: "Australie",  output: "16 Moz/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkeSZjmd0tGKh9sPYsPIf7eCW6NwR18WxWsw&s" },
+    { name: "Zhomart Mine",                lat:  49.500, lng:   73.500, country: "Kazakhstan", output: "—", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBoBSZEkjR3HtFvJQMqCnLAUDHAEYpiVRqHQ&s" },
+    { name: "Sindesar Khurd Mine",         lat:  24.999, lng:   74.146, country: "Inde",       output: "~7 Moz/year", img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwe0YNYRdTnJwjiEY_ft9nDl4l2TJP1BExsQ&s" },
+    { name: "Cerro Moro Mine",             lat: -47.900, lng:  -68.200, country: "Argentine",  output: "~7 Moz/year", img: "https://mineriaenlinea.com/wp-content/uploads/2018/05/cerromoro.jpg" },
+    { name: "Garpenberg Mine",             lat:  60.300, lng:   16.250, country: "Suède",      output: "~16 Moz/year", img: "https://im-mining.com/site/wp-content/uploads/2026/03/Screenshot-2026-03-19-193253.png" },
+    { name: "Keno Hill Mine",              lat:  63.900, lng: -135.300, country: "Canada",     output: "~2.5 Moz/year", img: "https://cisp.cachefly.net/assets/articles/images/resized/0001198090_resized_kenohillheclayukon02251022.jpeg" },
+    { name: "Fresnillo Mine",              lat:  23.173, lng: -102.879, country: "Mexique",    output: "53 Moz/year", img: "https://cisp.cachefly.net/assets/articles/images/resized/0001164016_resized_fresnilloplcsaucito1022.jpg" },
   ],
 };
 
@@ -77,7 +126,7 @@ export const ELEMENT_DETAILS: Record<string, ElementDetail> = {
     photo: "https://mineralseducationcoalition.org/wp-content/uploads/Lithium2_lepidolite_334916054.jpg",
     info: "Lithium is the lightest solid metal on Earth and the cornerstone of the energy transition. Lithium-ion batteries power smartphones, laptops, and electric vehicles, making it one of the most strategically vital minerals of the 21st century.",
     fun: "Lithium is so light it floats on water — and so reactive it must be stored in mineral oil to prevent ignition.",
-    stats: { "Atomic mass": "6.941 u", "Density": "0.534 g/cm³", "Melting point": "180.5 °C", "Top producers": "Chile, Australia, China" },
+    stats: { "Atomic mass": "6.941 u", "Density": "0.534 g/cm³", "Melting point": "180.5 °C", "Top producers": "Australia, Chile, China" },
   },
   Nickel: {
     symbol: "Ni", number: 28,
@@ -91,16 +140,16 @@ export const ELEMENT_DETAILS: Record<string, ElementDetail> = {
     photo: "https://www.jxscmachine.com/wp-content/uploads/2019/08/Cobalt-1.jpg",
     info: "Cobalt has coloured human civilisation for millennia. Today it stabilises cathode chemistry in lithium-ion cells, making it essential to every rechargeable battery.",
     fun: "Over 70% of world cobalt is mined in the Democratic Republic of the Congo.",
-    stats: { "Atomic mass": "58.933 u", "Density": "8.900 g/cm³", "Melting point": "1 495 °C", "Top producers": "DRC, Russia, Australia" },
+    stats: { "Atomic mass": "58.933 u", "Density": "8.900 g/cm³", "Melting point": "1 495 °C", "Top producers": "DRC, Indonesia, Russia" },
   },
-  Cuivre: {
+  Copper: {
     symbol: "Cu", number: 29,
     photo: "https://cdn11.bigcommerce.com/s-zyp1gsevdp/images/stencil/1280x1280/products/1685/18881/nativecopper1_copy__23593.1713933495.jpg?c=2",
     info: "Copper has been worked by humans for over 10,000 years. Its extraordinary electrical and thermal conductivity make it irreplaceable in wiring, motors, and electronics.",
     fun: "The Statue of Liberty is clad in roughly 80 tonnes of copper, which oxidised over decades to create its iconic green patina.",
-    stats: { "Atomic mass": "63.546 u", "Density": "8.960 g/cm³", "Melting point": "1 084 °C", "Top producers": "Chile, Peru, China" },
+    stats: { "Atomic mass": "63.546 u", "Density": "8.960 g/cm³", "Melting point": "1 084 °C", "Top producers": "Chile, DRC, Peru" },
   },
-  Argent: {
+  Silver: {
     symbol: "Ag", number: 47,
     photo: "https://img.freepik.com/photos-premium/minerai-argent-macro-pierres-precieuses-mines-argent_37753-250.jpg",
     info: "Silver holds the highest electrical and thermal conductivity of any element, making it irreplaceable in electronics, solar panels, and precision contacts.",
@@ -116,25 +165,26 @@ export const ELEMENT_DETAILS: Record<string, ElementDetail> = {
   },
 };
 
-// ─── Country detail data (replaces individual HTML files) ───────────────────
+// ─── Country detail data ─────────────────────────────────────────────────────
 export interface CountryStat {
   label: string;
   rank: string;
   value: string;
   unit: string;
-  barWidth: number; // percent 0–100
+  barWidth: number;
   barColor: string;
 }
 
 export interface CountryData {
-  id: number;           // numeric ISO code matching topojson
-  code: string;         // e.g. "US"
-  name: string;         // display name
+  id: number;
+  code: string;
+  name: string;
   description: string;
+  image?: string;
   stats: CountryStat[];
   mines: Array<{
     name: string;
-    coords: [number, number]; // [lng, lat]
+    coords: [number, number];
     img: string;
     desc: string;
   }>;
@@ -143,140 +193,393 @@ export interface CountryData {
 export const COUNTRIES: CountryData[] = [
   {
     id: 840, code: "US", name: "UNITED STATES",
+    image: "https://i.pinimg.com/736x/99/c6/ec/99c6ece952526956a8cd110fa36c2844.jpg",
     description: "Domestic mineral autonomy through the development of high-purity battery metal deposits and major copper production sites.",
     stats: [
-      { label: "CRUDE OIL PRODUCTION",         rank: "1ST GLOBALLY", value: "13.2", unit: "M Barrels/day", barWidth: 95, barColor: "#ff4b4b" },
-      { label: "POTENTIAL LITHIUM RESERVES",   rank: "TOP GLOBALLY", value: "20.0", unit: "M Tons",        barWidth: 80, barColor: "#c53030" },
-      { label: "COPPER PRODUCTION",            rank: "5TH GLOBALLY", value: "1.1",  unit: "M Tons/year",   barWidth: 45, barColor: "#8e1d1d" },
+      { label: "CRUDE OIL PRODUCTION",       rank: "1ST GLOBALLY", value: "13.2", unit: "M Barrels/day", barWidth: 95, barColor: "#111" },
+      { label: "POTENTIAL LITHIUM RESERVES", rank: "TOP GLOBALLY", value: "20.0", unit: "M Tons",        barWidth: 80, barColor: "#111" },
+      { label: "COPPER PRODUCTION",          rank: "5TH GLOBALLY", value: "1.1",  unit: "M Tons/year",   barWidth: 45, barColor: "#111" },
     ],
     mines: [
-      { name: "Thacker Pass (Li)", coords: [-118.06, 41.71], img: "https://images.unsplash.com/photo-1535732759880-bbd5c7265e3f?auto=format&fit=crop&w=400&q=80", desc: "Largest known lithium resource in the US, located in northern Nevada." },
-      { name: "Eagle Mine (Ni/Cu)", coords: [-87.89, 46.68], img: "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=400&q=80", desc: "High-grade nickel and copper mine located in Michigan's Upper Peninsula." },
-      { name: "Morenci Mine (Cu)", coords: [-109.33, 33.07], img: "https://images.unsplash.com/photo-1616782057396-03c038473f32?auto=format&fit=crop&w=400&q=80", desc: "One of the largest copper mines in North America, located in southeastern Arizona." },
+      { name: "Thacker Pass (Li)",  coords: [-118.055, 41.708], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSKUSYctn2LvbJPFOV_QRnS7Lgq8C5nr991Q&s", desc: "Largest known lithium resource in the US, located in northern Nevada." },
+      { name: "Eagle Mine (Ni/Cu)", coords: [ -87.882, 46.748], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1fwtdypJ43St-SBHPR6HU5mPxRzagSoJGZA&s", desc: "High-grade nickel and copper mine in Michigan's Upper Peninsula." },
+      { name: "Morenci Mine (Cu)",  coords: [-109.367, 33.091], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mZgKfYONGdEh_Rz_qijyNUQoD0vpd_3DFQ&s", desc: "One of the largest copper mines in North America, in southeastern Arizona." },
+      { name: "Silver Peak (Li)",   coords: [-117.637, 37.751], img: "https://cdn.prod.website-files.com/5fb173c4176306108ceab3b2/63e3128bb9ea271564ef1410_N%C2%B0TLISII01.webp", desc: "Only lithium brine operation currently in production in the United States." },
+      { name: "Greens Creek (Ag)",  coords: [-134.560, 58.298], img: "https://media.ktoo.org/wp-content/uploads/2024/11/3R3A8681-1.jpg", desc: "5th largest primary silver producer in the world, located in Alaska." },
     ],
   },
   {
     id: 152, code: "CL", name: "CHILE",
+    image: "https://cdn.britannica.com/14/183614-050-6D27ED8D/World-Data-Locator-Map-Chile.jpg",
     description: "World's largest producer of copper and second-largest of lithium. The Atacama Desert hosts some of the richest mineral brines on the planet.",
     stats: [
-      { label: "COPPER PRODUCTION",  rank: "1ST GLOBALLY", value: "5.7",  unit: "M Tons/year",   barWidth: 100, barColor: "#ff4b4b" },
-      { label: "LITHIUM PRODUCTION", rank: "2ND GLOBALLY", value: "39.0", unit: "K Tons/year",   barWidth:  78, barColor: "#c53030" },
-      { label: "LITHIUM RESERVES",   rank: "2ND GLOBALLY", value: "9.3",  unit: "M Tons",        barWidth:  60, barColor: "#8e1d1d" },
+      { label: "COPPER PRODUCTION",  rank: "1ST GLOBALLY", value: "5.3",  unit: "M Tons/year", barWidth: 100, barColor: "#111" },
+      { label: "LITHIUM PRODUCTION", rank: "2ND GLOBALLY", value: "57.0", unit: "K Tons/year", barWidth:  65, barColor: "#111" },
+      { label: "LITHIUM RESERVES",   rank: "2ND GLOBALLY", value: "9.3",  unit: "M Tons",      barWidth:  60, barColor: "#111" },
     ],
     mines: [
-      { name: "Salar de Atacama (Li)",  coords: [-68.2,  -23.5], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Lithium_brine_pools_in_the_Atacama_Desert.jpg/640px-Lithium_brine_pools_in_the_Atacama_Desert.jpg", desc: "World's most productive lithium brine operation, yielding over 140 000 t/year." },
-      { name: "Escondida (Cu)",         coords: [-69.1,  -24.3], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Minera_Escondida%2C_Chile.jpg/640px-Minera_Escondida%2C_Chile.jpg", desc: "Largest copper mine in the world by output, operated by BHP." },
-      { name: "Chuquicamata (Cu)",      coords: [-68.9,  -22.3], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Chuquicamata_Chile_Kupfermine.jpg/640px-Chuquicamata_Chile_Kupfermine.jpg", desc: "One of the oldest and largest open-pit copper mines in the world." },
+      { name: "Salar de Atacama (Li)", coords: [ -68.261, -23.535], img: "https://dialogue.earth/content/uploads/2020/10/Chile-lithium-scaled.jpg", desc: "World's most productive lithium brine operation, yielding over 140 000 t/year." },
+      { name: "Escondida (Cu)",        coords: [ -69.068, -24.272], img: "https://www.miningdoc.tech/wp-content/uploads/2024/12/Escondida-1-898x575.webp", desc: "Largest copper mine in the world by output, operated by BHP." },
+      { name: "Chuquicamata (Cu/Ag)",  coords: [ -68.909, -22.312], img: "https://i.redd.it/e4ygt3hbs8k21.jpg", desc: "One of the oldest and largest open-pit copper mines in the world." },
+      { name: "El Teniente (Cu)",      coords: [ -70.349, -34.085], img: "https://latinamericareports.com/wp-content/uploads/2025/08/unnamed.jpg", desc: "Largest underground copper mine in Chile, operated by Codelco." },
+      { name: "Collahuasi (Cu)",       coords: [ -68.625, -20.908], img: "https://www.mining-outlook.com/media/Collahuasi-Sector-Concentradora-Ujina-jpg.webp", desc: "Major copper mine producing 470 000 t/year in northern Chile." },
     ],
   },
   {
     id: 36, code: "AU", name: "AUSTRALIA",
+    image: "https://static-cms.routard.com/web-routard/uploads/australiepop_1367023_f6f073a3ce.gif",
     description: "Top global producer of lithium and a major supplier of cobalt, gold, and nickel. Home to vast hard-rock spodumene deposits.",
     stats: [
-      { label: "LITHIUM PRODUCTION", rank: "1ST GLOBALLY", value: "86.0", unit: "K Tons/year",  barWidth: 100, barColor: "#ff4b4b" },
-      { label: "GOLD PRODUCTION",    rank: "2ND GLOBALLY", value: "330",  unit: "Tons/year",    barWidth:  72, barColor: "#c53030" },
-      { label: "NICKEL PRODUCTION",  rank: "TOP 5",        value: "160",  unit: "K Tons/year",  barWidth:  50, barColor: "#8e1d1d" },
+      { label: "LITHIUM PRODUCTION", rank: "1ST GLOBALLY", value: "88.0", unit: "K Tons/year", barWidth: 100, barColor: "#111" },
+      { label: "GOLD PRODUCTION",    rank: "2ND GLOBALLY", value: "330",  unit: "Tons/year",   barWidth:  72, barColor: "#111" },
+      { label: "NICKEL PRODUCTION",  rank: "TOP 5",        value: "160",  unit: "K Tons/year", barWidth:  50, barColor: "#111" },
     ],
     mines: [
-      { name: "Greenbushes (Li)",  coords: [116.0, -33.8], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Talison_Lithium_Greenbushes_mine_2012.jpg/640px-Talison_Lithium_Greenbushes_mine_2012.jpg", desc: "World's highest-grade and largest hard-rock lithium mine." },
-      { name: "Olympic Dam (Cu/U)", coords: [136.9, -30.4], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Olympic_Dam_Smelter.jpg/640px-Olympic_Dam_Smelter.jpg", desc: "Enormous polymetallic deposit containing copper, uranium, gold, and silver." },
-      { name: "Weipa (bauxite)",   coords: [141.9, -12.7], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Weipa_bauxite_mine.jpg/640px-Weipa_bauxite_mine.jpg", desc: "One of the world's largest bauxite (aluminium ore) operations." },
+      { name: "Greenbushes (Li)",          coords: [ 116.063, -33.869], img: "https://a.storyblok.com/f/287943243085208/c87716240e/bm-greenbushes-1.jpg", desc: "World's highest-grade and largest hard-rock lithium mine." },
+      { name: "Olympic Dam (Cu/U)",        coords: [ 136.891, -30.486], img: "https://www.mining-technology.com/wp-content/uploads/sites/19/2017/10/1-olympic-dam.jpg", desc: "Enormous polymetallic deposit containing copper, uranium, gold, and silver." },
+      { name: "Weipa (bauxite)",           coords: [ 141.921, -12.677], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJpxmnb_I_-hpl8omEwq1w3oAEzt3dXuSlvw&s", desc: "One of the world's largest bauxite (aluminium ore) operations." },
+      { name: "Cosmos Nickel Mine",        coords: [ 120.576, -27.598], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw-b0B_Wa5X6EdzKN-EnKI5NhMSgrckhhDMA&s", desc: "Underground nickel mine in Western Australia." },
+      { name: "Cannington (Ag)",           coords: [ 140.923, -21.869], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkeSZjmd0tGKh9sPYsPIf7eCW6NwR18WxWsw&s", desc: "One of the world's largest primary silver mines in Queensland." },
+      { name: "Broken Hill Cobalt Project",coords: [ 141.197, -35.088], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzDL_KWcQty0s4zInr05gKV3cF2J7OAZUTBQ&s", desc: "Primary cobalt project, one of few in the world not reliant on nickel or copper." },
     ],
   },
   {
     id: 156, code: "CN", name: "CHINA",
+    image: "https://www.actualitix.com/wp-content/uploads/2017/02/carte-chine.jpg",
     description: "Dominant processor of virtually every critical mineral. Controls refining capacity for lithium, cobalt, rare earths, and gallium.",
     stats: [
-      { label: "RARE EARTH PRODUCTION", rank: "1ST GLOBALLY", value: "210", unit: "K Tons/year", barWidth: 100, barColor: "#ff4b4b" },
-      { label: "GALLIUM PRODUCTION",    rank: "1ST GLOBALLY", value: "600", unit: "Tons/year",   barWidth: 100, barColor: "#c53030" },
-      { label: "TUNGSTEN PRODUCTION",   rank: "1ST GLOBALLY", value: "84",  unit: "K Tons/year", barWidth: 100, barColor: "#8e1d1d" },
+      { label: "RARE EARTH PRODUCTION", rank: "1ST GLOBALLY", value: "210", unit: "K Tons/year", barWidth: 100, barColor: "#111" },
+      { label: "ALUMINIUM PRODUCTION",  rank: "1ST GLOBALLY", value: "36.0", unit: "M Tons/year", barWidth: 100, barColor: "#111" },
+      { label: "SILVER PRODUCTION",     rank: "3RD GLOBALLY", value: "3 570", unit: "Tons/year",  barWidth:  56, barColor: "#111" },
     ],
     mines: [
-      { name: "Bayan Obo (REE)", coords: [110.0, 41.8], img: "", desc: "World's largest rare earth deposit, containing light REEs essential for magnets and electronics." },
-      { name: "Jiangxi REE",     coords: [115.9, 27.1], img: "", desc: "Major ion-absorption rare earth mining region, key for heavy REEs." },
-      { name: "Shanxi Coal/Al",  coords: [112.5, 37.8], img: "", desc: "Major coal and aluminium production hub in central China." },
+      { name: "Jiajika Mine (Li)",      coords: [ 101.302,  30.296], img: "https://assets.bizclikmedia.net/553/100de3d941422c914c76192f06e0b389:c82d7427b4bb7ae95a60d72d882fea7c/lithiummine-1-jpeg.webp", desc: "Major lithium mine in Sichuan province." },
+      { name: "Jinchuan (Ni/Co)",       coords: [ 102.183,  38.472], img: "https://prod.cdn-medias.africabusinessplus.com/medias/2025/12/12/ab20251212-rdc-chinoi-jinchuan-mine-1.jpg", desc: "Major nickel-cobalt mining and smelting complex in Gansu province." },
+      { name: "Dexing Copper Mine",     coords: [ 117.729,  29.016], img: "https://static.independent.co.uk/2025/09/24/7/33/Dexing-Copper-Mine-an-open-pit-copper-mine-in-Dexing-in-Chinas-central-Jiangxi-province.jpeg?crop=3626.7,2720,x226.7,y170&width=1200&height=900", desc: "Largest open-pit copper mine in China, in Jiangxi province." },
+      { name: "Fankou Mine (Ag/Pb/Zn)", coords: [ 113.760,  24.740], img: "https://im-mining.com/site/wp-content/uploads/2023/04/CMP-Fankou.jpg", desc: "Major silver, lead and zinc mine in Guangdong." },
     ],
   },
   {
     id: 180, code: "CD", name: "DR CONGO",
+    image: "https://c8.alamy.com/compfr/e6h2g8/republique-democratique-du-congo-carte-politique-avec-capitale-kinshasa-les-frontieres-nationales-la-plupart-des-grandes-villes-rivieres-et-lacs-e6h2g8.jpg",
     description: "Holds roughly 70% of global cobalt reserves. Also a significant producer of copper from the Congolese Copperbelt.",
     stats: [
-      { label: "COBALT PRODUCTION", rank: "1ST GLOBALLY", value: "130", unit: "K Tons/year", barWidth: 100, barColor: "#ff4b4b" },
-      { label: "COBALT RESERVES",   rank: "1ST GLOBALLY", value: "3.6", unit: "M Tons",      barWidth: 100, barColor: "#c53030" },
-      { label: "COPPER PRODUCTION", rank: "TOP 5",        value: "2.6", unit: "M Tons/year", barWidth:  65, barColor: "#8e1d1d" },
+      { label: "COBALT PRODUCTION", rank: "1ST GLOBALLY", value: "200",  unit: "K Tons/year", barWidth: 100, barColor: "#111" },
+      { label: "COBALT RESERVES",   rank: "1ST GLOBALLY", value: "6.0",  unit: "M Tons",      barWidth: 100, barColor: "#111" },
+      { label: "COPPER PRODUCTION", rank: "2ND GLOBALLY", value: "3.3",  unit: "M Tons/year", barWidth:  62, barColor: "#111" },
     ],
     mines: [
-      { name: "Tenke Fungurume", coords: [26.1, -10.5], img: "https://media.lesechos.com/api/v1/images/view/6400ba01444d9840f463f25d/1280x720/0703510707775-web-tete.jpg", desc: "Giant copper-cobalt mine in Lualaba Province, one of the richest in the world." },
-      { name: "Mutanda Mine",    coords: [23.9,  -8.0], img: "https://deskeco.com/sites/default/files/styles/1024x578/public/2019-10/Mine-5.jpg?itok=qOPF8glo", desc: "Among the world's highest-grade cobalt deposits, now partially operational again." },
-      { name: "Kamoto (Cu/Co)", coords: [25.5, -10.8], img: "", desc: "Underground copper-cobalt mine operated by Glencore in the Copperbelt." },
+      { name: "Tenke Fungurume (Cu/Co)", coords: [26.098, -11.200], img: "https://deskeco.com/sites/default/files/styles/1024x578/public/2022-07/Usine%20Tenke%20Fungurume.png?itok=CrfdSvnl", desc: "Giant copper-cobalt mine in Lualaba Province." },
+      { name: "Mutanda Mine (Co)",       coords: [23.936,  -8.021], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBHI7tltlnYlHsp-xFCQgEfkp2nrI1nuUL5g&s", desc: "Among the world's highest-grade cobalt deposits." },
+      { name: "Kolwezi Mine (Co)",       coords: [25.456, -10.728], img: "https://s.abcnews.com/images/International/congo-mine-1-gty-ps-230206_1675708395663_hpMain_16x9_992.jpg", desc: "Major cobalt mining zone in Lualaba Province." },
+      { name: "Kamoa-Kakula (Cu)",       coords: [26.900, -10.200], img: "https://im-mining.com/site/wp-content/uploads/2020/09/63350_6e9d6712f44748ed_024full-Kamoa-Kakula.jpg", desc: "Giant copper complex, among the largest discoveries in decades." },
     ],
   },
   {
     id: 643, code: "RU", name: "RUSSIA",
+    image: "https://www.mappemonde.net/wp-content/uploads/2023/11/carte-russie1.jpeg",
     description: "Major supplier of nickel, palladium, and cobalt. Norilsk Nickel dominates global palladium supply and is among the world's top nickel producers.",
     stats: [
-      { label: "PALLADIUM PRODUCTION", rank: "1ST GLOBALLY", value: "88",  unit: "Tons/year",   barWidth: 100, barColor: "#ff4b4b" },
-      { label: "NICKEL PRODUCTION",    rank: "2ND GLOBALLY", value: "220", unit: "K Tons/year", barWidth:  85, barColor: "#c53030" },
-      { label: "COBALT PRODUCTION",    rank: "3RD GLOBALLY", value: "7.6", unit: "K Tons/year", barWidth:  40, barColor: "#8e1d1d" },
+      { label: "PALLADIUM PRODUCTION", rank: "1ST GLOBALLY", value: "88",  unit: "Tons/year",   barWidth: 100, barColor: "#111" },
+      { label: "NICKEL PRODUCTION",    rank: "3RD GLOBALLY", value: "210", unit: "K Tons/year", barWidth:  58, barColor: "#111" },
+      { label: "COBALT PRODUCTION",    rank: "3RD GLOBALLY", value: "8.7", unit: "K Tons/year", barWidth:  40, barColor: "#111" },
     ],
     mines: [
-      { name: "Norilsk (Ni/Co/Pd)", coords: [88.2, 69.3], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Norilsk_Mining_Plant.jpg/640px-Norilsk_Mining_Plant.jpg", desc: "Arctic mining-industrial complex, the world's northernmost city and largest nickel/palladium operation." },
-      { name: "Talnakh (Ni/Cu)",    coords: [88.4, 69.5], img: "", desc: "Underground extension of the Norilsk deposit, among the richest sulphide ores known." },
+      { name: "Oktyabrskoye (Ni/Co/Pd)", coords: [ 88.340,  69.524], img: "https://gmk.center/wp-content/uploads/2022/07/DBK3S3S8-jsG.jpg", desc: "Arctic mining complex, world's largest nickel/palladium operation." },
+      { name: "Karakul Deposit (Co)",    coords: [ 89.543,  49.912], img: "https://www.mining-technology.com/wp-content/uploads/sites/19/2017/10/1-image-21.jpg", desc: "Cobalt deposit in the Altai Republic." },
+      { name: "Udokan Mine (Cu)",        coords: [118.417,  56.591], img: "https://cdnuploads.aa.com.tr/uploads/enerjiterminali/Contents/2023/09/11/thumbs_b_c_e11076da72ce90a34a8b03263b5b4bf4.jpg?v=174109", desc: "Largest copper deposit in Russia, third largest in the world." },
+      { name: "Dukat Mine (Ag)",         coords: [157.500,  62.500], img: "https://photos.wikimapia.org/p/00/00/62/21/38_big.jpg", desc: "One of the world's largest primary silver mines, in Magadan." },
+      { name: "Krasnaya Shapochka (Al)", coords: [ 59.973,  60.198], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeX9iy8wrQRMbCkSK3bzJ3j_6lwZQdnvC4ng&s", desc: "Major bauxite mine operated by RUSAL in the Urals." },
     ],
   },
   {
     id: 484, code: "MX", name: "MEXICO",
+    image: "https://www.actualitix.com/wp-content/uploads/2017/07/carte-mexique-simple.jpg",
     description: "World's leading silver producer for over a decade. Also a significant source of copper, zinc, and lead.",
     stats: [
-      { label: "SILVER PRODUCTION", rank: "1ST GLOBALLY", value: "6 400", unit: "Tons/year",   barWidth: 100, barColor: "#ff4b4b" },
-      { label: "COPPER PRODUCTION", rank: "TOP 10",       value: "750",   unit: "K Tons/year", barWidth:  45, barColor: "#c53030" },
-      { label: "ZINC PRODUCTION",   rank: "TOP 5",        value: "700",   unit: "K Tons/year", barWidth:  55, barColor: "#8e1d1d" },
+      { label: "SILVER PRODUCTION", rank: "1ST GLOBALLY", value: "6 120", unit: "Tons/year",   barWidth: 100, barColor: "#111" },
+      { label: "COPPER PRODUCTION", rank: "TOP 10",       value: "750",   unit: "K Tons/year", barWidth:  45, barColor: "#111" },
+      { label: "ZINC PRODUCTION",   rank: "TOP 5",        value: "700",   unit: "K Tons/year", barWidth:  55, barColor: "#111" },
     ],
     mines: [
-      { name: "Fresnillo (Ag)", coords: [-102.9, 23.2], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Fresnillo_mine.jpg/640px-Fresnillo_mine.jpg", desc: "World's largest primary silver mine, operated by Fresnillo plc in Zacatecas state." },
-      { name: "Peñasquito (Ag/Au/Zn)", coords: [-101.7, 24.9], img: "", desc: "Large polymetallic open-pit mine, one of the world's largest silver-zinc operations." },
-      { name: "Cananea (Cu)", coords: [-110.3, 30.9], img: "", desc: "Major copper mine in Sonora, one of Mexico's most productive." },
+      { name: "Fresnillo (Ag)",         coords: [-102.879, 23.173], img: "https://cisp.cachefly.net/assets/articles/images/resized/0001164016_resized_fresnilloplcsaucito1022.jpg", desc: "World's largest primary silver mine, in Zacatecas state." },
+      { name: "Peñasquito (Ag/Au/Zn)",  coords: [-101.710, 24.914], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoR8ZB5D0phNtmyPnA-MS2HjTIB3oIKr22yQ&s", desc: "Large polymetallic open-pit mine, one of the world's largest silver-zinc operations." },
+      { name: "Buenavista (Cu/Cananea)",coords: [-110.331, 30.961], img: "https://npr.brightspotcdn.com/dims4/default/8fbb9b4/2147483647/strip/true/crop/1500x1000+0+0/resize/880x587!/quality/90/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Flegacy%2Fs3fs-public%2FPueblosMagicos9.jpg", desc: "Mexico's largest copper mine, in Sonora." },
     ],
   },
   {
     id: 604, code: "PE", name: "PERU",
+    image: "https://static-cms.routard.com/web-routard/uploads/peroupop_1366984_a6533eacca.gif",
     description: "Major producer of silver, copper, zinc, and gold. The Andes host some of the world's richest polymetallic deposits.",
     stats: [
-      { label: "COPPER PRODUCTION", rank: "2ND GLOBALLY", value: "2.8", unit: "M Tons/year", barWidth: 80, barColor: "#ff4b4b" },
-      { label: "SILVER PRODUCTION", rank: "2ND GLOBALLY", value: "3 800", unit: "Tons/year", barWidth: 75, barColor: "#c53030" },
-      { label: "ZINC PRODUCTION",   rank: "2ND GLOBALLY", value: "1.5",  unit: "M Tons/year", barWidth: 70, barColor: "#8e1d1d" },
+      { label: "COPPER PRODUCTION", rank: "3RD GLOBALLY", value: "2.6",   unit: "M Tons/year", barWidth: 75, barColor: "#111" },
+      { label: "SILVER PRODUCTION", rank: "2ND GLOBALLY", value: "4 160", unit: "Tons/year",   barWidth: 80, barColor: "#111" },
+      { label: "ZINC PRODUCTION",   rank: "2ND GLOBALLY", value: "1.5",   unit: "M Tons/year", barWidth: 70, barColor: "#111" },
     ],
     mines: [
-      { name: "Antamina (Zn/Cu/Ag)", coords: [-77.1, -9.5], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Antamina_mine.jpg/640px-Antamina_mine.jpg", desc: "One of the world's largest polymetallic mines, at 4 300 m altitude in the Andes." },
-      { name: "Las Bambas (Cu)",     coords: [-72.1, -14.0], img: "", desc: "Major copper mine contributing nearly 2% of world supply." },
-      { name: "Cerro Verde (Cu)",    coords: [-71.5, -16.5], img: "", desc: "Open-pit porphyry copper-molybdenum mine near Arequipa." },
+      { name: "Antamina (Zn/Cu/Ag)", coords: [-77.049,  -9.554], img: "https://www.teck.com/media/1600x9999//Operations-T1-16-Teck-Antamina-Panorama-Mining-Pit-Night-Evening-1280x500-2015.jpg", desc: "One of the world's largest polymetallic mines, at 4 300 m in the Andes." },
+      { name: "Las Bambas (Cu)",     coords: [-72.100, -14.000], img: "https://www.mmg.com/content/uploads/2025/12/FOTO-AEREA-FOTOGRAFIA-CORPORATIVA-LAS-BAMBAS-JUN-2023-10-2000x0-c-default.jpg", desc: "Major copper mine contributing nearly 2% of world supply." },
+      { name: "Cerro Verde (Cu)",    coords: [-71.500, -16.500], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQFlS0VRClI1uzne8EgyW95dTKfx5aUNJ4Bg&s", desc: "Open-pit porphyry copper-molybdenum mine near Arequipa." },
+      { name: "Uchucchacua (Ag)",    coords: [-76.550, -10.720], img: "https://slowcarfasthouse.com/wp-content/uploads/2019/08/andes-mining-operation-in-the-andes.jpg", desc: "Underground silver, lead and zinc mine discovered by Buenaventura." },
     ],
   },
   {
     id: 710, code: "ZA", name: "SOUTH AFRICA",
+    image: "https://www.africaguide.com/image/country/safrica/maps/south_africa_political_map.png",
     description: "Produces roughly 70% of the world's platinum and is among the top producers of chromium, manganese, and gold.",
     stats: [
-      { label: "PLATINUM PRODUCTION",  rank: "1ST GLOBALLY", value: "130", unit: "Tons/year",   barWidth: 100, barColor: "#ff4b4b" },
-      { label: "CHROMIUM PRODUCTION",  rank: "1ST GLOBALLY", value: "18",  unit: "M Tons/year", barWidth:  95, barColor: "#c53030" },
-      { label: "MANGANESE PRODUCTION", rank: "1ST GLOBALLY", value: "7.7", unit: "M Tons/year", barWidth:  90, barColor: "#8e1d1d" },
+      { label: "PLATINUM PRODUCTION",  rank: "1ST GLOBALLY", value: "130", unit: "Tons/year",   barWidth: 100, barColor: "#111" },
+      { label: "CHROMIUM PRODUCTION",  rank: "1ST GLOBALLY", value: "18",  unit: "M Tons/year", barWidth:  95, barColor: "#111" },
+      { label: "MANGANESE PRODUCTION", rank: "1ST GLOBALLY", value: "7.7", unit: "M Tons/year", barWidth:  90, barColor: "#111" },
     ],
     mines: [
-      { name: "Bushveld Complex (Pt/Pd)", coords: [28.3, -25.0], img: "", desc: "World's largest known PGM (platinum group metals) deposit, stretching across Limpopo and North West provinces." },
-      { name: "Khumani (Fe)",             coords: [22.8, -27.6], img: "", desc: "Large iron ore mine in the Northern Cape, part of the Sishen-Khumani complex." },
+      { name: "Bushveld Complex (Pt/Pd)", coords: [28.300, -25.000], img: "https://www.miningmx.com/wp-content/uploads/2020/08/fb40cae271abee8d4cc0b04e802b9dee-e1597133562285-696x392.jpg", desc: "World's largest known PGM deposit, across Limpopo and North West provinces." },
+      { name: "Khumani (Fe)",             coords: [22.800, -27.600], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIXt7oYVz5_gLsWdb2SjIwa4wSP0rz7PYiCA&s", desc: "Large iron ore mine in the Northern Cape." },
+      { name: "Nkomati Mine (Co/Ni)",     coords: [30.800, -25.600], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5EccFnv987jv9vlZswssagBeeImTkX8JjPg&s", desc: "Polymetallic mine in Mpumalanga province." },
     ],
   },
   {
     id: 124, code: "CA", name: "CANADA",
+    image: "https://brilliantmaps.com/wp-content/uploads/CA-map.jpg",
     description: "Rich in nickel, cobalt, uranium, and potash. Canadian mines supply critical materials for EV batteries and nuclear energy.",
     stats: [
-      { label: "NICKEL PRODUCTION",  rank: "TOP 5",        value: "130", unit: "K Tons/year", barWidth:  60, barColor: "#ff4b4b" },
-      { label: "URANIUM PRODUCTION", rank: "2ND GLOBALLY", value: "7.4", unit: "K Tons/year", barWidth:  78, barColor: "#c53030" },
-      { label: "COBALT PRODUCTION",  rank: "TOP 5",        value: "3.8", unit: "K Tons/year", barWidth:  30, barColor: "#8e1d1d" },
+      { label: "NICKEL PRODUCTION",  rank: "TOP 5",        value: "130", unit: "K Tons/year", barWidth:  60, barColor: "#111" },
+      { label: "URANIUM PRODUCTION", rank: "2ND GLOBALLY", value: "7.4", unit: "K Tons/year", barWidth:  78, barColor: "#111" },
+      { label: "COBALT PRODUCTION",  rank: "TOP 5",        value: "3.8", unit: "K Tons/year", barWidth:  30, barColor: "#111" },
     ],
     mines: [
-      { name: "Sudbury Basin (Ni/Co)", coords: [-81.0, 46.5], img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Sudbury_superstack.jpg/640px-Sudbury_superstack.jpg", desc: "World's second-largest nickel deposit, formed by a meteorite impact 1.85 billion years ago." },
-      { name: "Thompson (Ni)",         coords: [-97.8, 55.7], img: "", desc: "Major nickel operation in northern Manitoba, part of the Thompson Nickel Belt." },
-      { name: "Cigar Lake (U)",        coords: [-105.6, 58.1], img: "", desc: "World's highest-grade uranium deposit, at depths of 430 m in Saskatchewan." },
+      { name: "Sudbury Basin (Ni/Co)",    coords: [ -81.011, 46.490], img: "https://www.northernminer.com/wp-content/uploads/2014/09/1003247955-1003258425-700x437.jpg", desc: "World's second-largest nickel deposit, formed by a meteorite impact 1.85 billion years ago." },
+      { name: "Thompson Mine (Ni)",       coords: [ -97.855, 55.744], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-A0Qaf3xg1Gwq4OW-ruIsrHOAkmmazrXl5g&s", desc: "Major nickel operation in northern Manitoba." },
+      { name: "Voisey's Bay (Ni)",        coords: [ -62.103, 56.334], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBEgHndHKCq69nd0KUlW4rzQJvI4YjEhHVLQ&s", desc: "High-grade nickel-copper-cobalt mine in Labrador." },
+      { name: "Highland Valley Cu",       coords: [-121.000, 50.500], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2DEEd4KM3H7GtaCJ12G_HV8TPqbzurr6SEQ&s", desc: "Canada's largest open-pit copper mine in British Columbia." },
+      { name: "Castle Mine (Co)",         coords: [ -80.741, 47.676], img: "https://nmrs.org.uk/wp-content/uploads/2024/11/castle2.jpg", desc: "Historic cobalt mining area in Ontario." },
+      { name: "Keno Hill (Ag)",           coords: [-135.300, 63.900], img: "https://cisp.cachefly.net/assets/articles/images/resized/0001198090_resized_kenohillheclayukon02251022.jpeg", desc: "Canada's primary silver district in the Yukon." },
+    ],
+  },
+  {
+    id: 32, code: "AR", name: "ARGENTINA",
+    image: "https://images.ctfassets.net/6dczv5fypa6q/696eOjgIgWeoPRDQ3nq63c/9c7e59d27fd62d9b8ae15ba65e3feb66/Argentina.jpg",
+    description: "Third largest lithium reserves in the world. Key player in the 'Lithium Triangle' alongside Chile and Bolivia.",
+    stats: [
+      { label: "LITHIUM PRODUCTION", rank: "4TH GLOBALLY", value: "18.0", unit: "K Tons/year", barWidth: 45, barColor: "#111" },
+      { label: "LITHIUM RESERVES",   rank: "3RD GLOBALLY", value: "22.0", unit: "M Tons",      barWidth: 85, barColor: "#111" },
+        { label: "COPPER RESERVES",    rank: "TOP 10",       value: "17.1", unit: "M Tons",      barWidth: 30, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Salar de Olaroz (Li)", coords: [-66.666, -23.474], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROh_wudpoUP42SEv75u0x3u7eBOfEuHtpcIw&s", desc: "Major lithium brine operation in Jujuy province." },
+      { name: "Cerro Moro (Ag/Au)",   coords: [-68.200, -47.900], img: "https://mineriaenlinea.com/wp-content/uploads/2018/05/cerromoro.jpg", desc: "Open-pit and underground gold-silver operation in Santa Cruz." },
+    ],
+  },
+  {
+    id: 76, code: "BR", name: "BRAZIL",
+    image: "https://static-cms.routard.com/web-routard/uploads/bresilpop_1366893_584ff6328c.gif",
+    description: "Major producer of bauxite (aluminium), iron ore, and an emerging lithium producer.",
+    stats: [
+      { label: "IRON ORE PRODUCTION", rank: "2ND GLOBALLY", value: "480",  unit: "M Tons/year", barWidth: 85, barColor: "#111" },
+      { label: "BAUXITE PRODUCTION",  rank: "TOP 5",        value: "35.0", unit: "M Tons/year", barWidth: 60, barColor: "#111" },
+      { label: "NICKEL PRODUCTION",   rank: "TOP 10",       value: "80.0", unit: "K Tons/year", barWidth: 30, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Trombetas MRN (Al)", coords: [-56.373,  -1.492], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjr6HAZ6UUwnqpz4pc5p5BczXSMtrwP42ZYQ&s", desc: "One of the world's largest bauxite operations in Pará." },
+      { name: "Grota do Cirilo (Li)",coords: [-41.893, -16.701], img: "https://www.mining-technology.com/wp-content/uploads/sites/19/2020/02/Image-1-Grota-do-Corilo-Lithium-Project.jpg", desc: "Sigma Lithium's flagship spodumene project in Minas Gerais." },
+      { name: "Santa Rita (Ni)",    coords: [-39.713, -14.176], img: "https://im-mining.com/site/wp-content/uploads/2020/09/mira123-SantaRita.jpg", desc: "Atlantic Nickel's sulphide nickel mine in Bahia." },
+    ],
+  },
+  {
+    id: 68, code: "BO", name: "BOLIVIA",
+    image: "https://www.freeworldmaps.net/southamerica/bolivia/bolivia-physical-map.jpg",
+    description: "Home to the world's largest lithium reserves (Salar de Uyuni). Also a significant silver and zinc producer.",
+    stats: [
+      { label: "LITHIUM RESERVES",  rank: "1ST GLOBALLY", value: "23.0", unit: "M Tons",    barWidth: 100, barColor: "#111" },
+      { label: "SILVER PRODUCTION", rank: "TOP 5",        value: "1.5",  unit: "K Tons/year", barWidth:  35, barColor: "#111" },
+      { label: "ZINC PRODUCTION",   rank: "TOP 10",       value: "500",  unit: "K Tons/year", barWidth:  40, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Salar de Uyuni (Li)",  coords: [-67.489, -20.134], img: "https://static.nationalgeographic.fr/files/styles/image_3200/public/re%CC%81sume%CC%81_fe%CC%81vrier2019_lithium.jpg?w=1900&h=1425", desc: "World's largest salt flat and lithium reserve, still largely undeveloped." },
+      { name: "San Cristobal (Ag/Zn)",coords: [-67.208, -21.116], img: "https://im-mining.com/site/wp-content/uploads/2019/07/Minera-San-Cristobal-Sumitomo-Corporation.jpg", desc: "One of the largest silver-zinc operations in the world, operated by Sumitomo." },
+    ],
+  },
+  {
+    id: 616, code: "PL", name: "POLAND",
+    image: "https://www.visitpolska.info/en/wp-content/uploads/sites/164/poland-map.gif",
+    description: "Europe's largest copper and silver producer, with major underground mines operated by KGHM.",
+    stats: [
+      { label: "COPPER PRODUCTION", rank: "TOP 10", value: "400",   unit: "K Tons/year", barWidth: 55, barColor: "#111" },
+      { label: "SILVER PRODUCTION", rank: "TOP 5",  value: "1 300", unit: "Tons/year",   barWidth: 60, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Rudna Mine (Cu/Ag)",             coords: [15.800, 51.300], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2sREaSrbRdsKoRazGBArFyKP5Lpfz1u9mng&s", desc: "One of Europe's largest underground copper-silver mines, operated by KGHM." },
+      { name: "Polkowice-Sieroszowice (Cu/Ag)",  coords: [16.100, 51.500], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStzUdQTBFPc6jQvWLJMDf-69YVnAHBlIYmzw&s", desc: "Major underground copper-silver complex in Lower Silesia." },
+    ],
+  },
+  {
+    id: 398, code: "KZ", name: "KAZAKHSTAN",
+    image: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Carte_Kazakhstan.png",
+    description: "Major producer of copper, uranium, and silver. Home to significant polymetallic deposits.",
+    stats: [
+      { label: "URANIUM PRODUCTION", rank: "1ST GLOBALLY", value: "43.0", unit: "K Tons/year", barWidth: 100, barColor: "#111" },
+      { label: "COPPER PRODUCTION",  rank: "TOP 10",       value: "580",  unit: "K Tons/year", barWidth:  50, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Aktogay Mine (Cu)",  coords: [79.943, 46.958], img: "https://www.kazminerals.com/app/uploads/2025/08/aktogay-home.jpg", desc: "Large open-pit copper mine operated by KAZ Minerals." },
+      { name: "Zhomart Mine (Ag)",  coords: [73.500, 49.500], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBoBSZEkjR3HtFvJQMqCnLAUDHAEYpiVRqHQ&s", desc: "Underground copper-silver mine, key asset for KAZ Minerals." },
+    ],
+  },
+  {
+    id: 752, code: "SE", name: "SWEDEN",
+    image: "https://www.shutterstock.com/shutterstock/photos/272213180/display_1500/stock-vector-sweden-political-map-with-capital-stockholm-national-borders-important-cities-rivers-and-lakes-272213180.jpg",
+    description: "Rich in iron ore and base metals. Home to some of Europe's most technologically advanced underground mines.",
+    stats: [
+      { label: "IRON ORE PRODUCTION", rank: "TOP 10", value: "37.0", unit: "M Tons/year", barWidth: 55, barColor: "#111" },
+  { label: "SILVER PRODUCTION",   rank: "TOP 20", value: "256",  unit: "Tons/year",   barWidth: 25, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Garpenberg Mine (Ag/Zn)", coords: [16.250, 60.300], img: "https://im-mining.com/site/wp-content/uploads/2026/03/Screenshot-2026-03-19-193253.png", desc: "One of Sweden's oldest active mines and one of the most automated in the world." },
+    ],
+  },
+  {
+    id: 504, code: "MA", name: "MOROCCO",
+    image: "https://static-cms.routard.com/web-routard/uploads/marocpop_1366928_e00a481edb.gif",
+    description: "Africa's leading cobalt producer outside DRC. Also home to major phosphate reserves.",
+    stats: [
+      { label: "COBALT PRODUCTION",    rank: "TOP 10",       value: "2 200", unit: "Tons/year",   barWidth:  30, barColor: "#111" },
+      { label: "PHOSPHATE PRODUCTION", rank: "1ST GLOBALLY", value: "38.0",  unit: "M Tons/year", barWidth: 100, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Bou-Azzer Mine (Co)", coords: [-6.913, 30.518], img: "https://cisp.cachefly.net/assets/articles/images/resized/0001100624_resized_managembouazzercabaltminemorocco1022.jpg", desc: "One of the few primary cobalt mines in the world, in the Anti-Atlas region." },
+    ],
+  },
+  {
+    id: 450, code: "MG", name: "MADAGASCAR",
+    image: "https://static-cms.routard.com/web-routard/uploads/large_madagascarpop_1366926_61af1a5279.gif",
+    description: "World-class lateritic nickel-cobalt operation. The Ambatovy project represents one of the largest mining investments in Africa.",
+    stats: [
+      { label: "NICKEL CAPACITY", rank: "40K T/YEAR", value: "40 000", unit: "Tonnes/yr", barWidth: 90, barColor: "#111" },
+      { label: "COBALT CAPACITY", rank: "4K T/YEAR",  value: "4 000",  unit: "Tonnes/yr", barWidth: 80, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Ambatovy Mine (Ni/Co)", coords: [48.308, -18.845], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIciHrDP1Qe8Dza96f6FmCr78nhYonemopFQ&s", desc: "Major integrated HPAL nickel-cobalt mine. Total investment exceeds $8 billion." },
+    ],
+  },
+  {
+    id: 540, code: "NC", name: "NEW CALEDONIA (FR)",
+    image: "https://www.universalis.fr/typo3temp/assets/_processed_/6/8/csm_at007403_9f4ddcf831.webp",
+    description: "French overseas territory controlling ~25% of the world's nickel resources. Pivotal to France's resource sovereignty in the Indo-Pacific.",
+    stats: [
+      { label: "NICKEL RESOURCES", rank: "~25% GLOBAL", value: "25%", unit: "global resources", barWidth: 75, barColor: "#111" },
+    ],
+    mines: [
+      { name: "SLN — Doniambo (Ni)",       coords: [166.440, -22.250], img: "https://sln.eramet.com/wp-content/uploads/sites/5/2020/10/DSC08499.jpg", desc: "Historic metallurgical complex in Nouméa, operating since the 19th century." },
+      { name: "Prony Resources / Goro (Ni/Co)", coords: [167.010, -22.158], img: "https://www.hatchperformanceinnovations.com/wp-content/uploads/2024/10/proj-04-02-1.webp", desc: "Major HPAL plant producing battery-grade nickel for the energy transition." },
+    ],
+  },
+  {
+    id: 356, code: "IN", name: "INDIA",
+    image: "https://upload.wikimedia.org/wikipedia/commons/c/c0/Inde_carte.png",
+    description: "Major aluminium and zinc producer. Growing importance as a copper processor and silver producer.",
+    stats: [
+      { label: "ALUMINIUM PRODUCTION", rank: "2ND GLOBALLY", value: "4.0", unit: "M Tons/year", barWidth: 70, barColor: "#111" },
+      { label: "ZINC PRODUCTION",      rank: "TOP 5",        value: "800", unit: "K Tons/year", barWidth: 55, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Damanjodi Bauxite (Al)", coords: [ 82.750,  18.820], img: "https://www.alcircle.com/api/media/1765243560.53675_NALCO_bauxite_facility_0_0.jpg", desc: "NALCO's integrated bauxite complex in Odisha's Panchpatmali hills." },
+      { name: "Malanjkhand Mine (Cu)",  coords: [ 81.050,  22.070], img: "https://bl-i.thgim.com/public/incoming/b0l66p/article66153163.ece/alternates/FREE_1200/hindustan-copper.jpg", desc: "India's largest base metals mine in Madhya Pradesh." },
+      { name: "Sindesar Khurd (Ag/Zn)", coords: [ 74.146,  24.999], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwe0YNYRdTnJwjiEY_ft9nDl4l2TJP1BExsQ&s", desc: "India's largest underground zinc-silver mine, operated by Hindustan Zinc." },
+    ],
+  },
+  {
+    id: 170, code: "CO", name: "COLOMBIA",
+    image: "https://www.shutterstock.com/shutterstock/photos/209879101/display_1500/stock-vector-colombia-political-map-with-capital-bogota-national-borders-most-important-cities-rivers-and-209879101.jpg",
+    description: "Significant nickel producer through the Cerro Matoso ferronickel operation.",
+    stats: [
+      { label: "NICKEL PRODUCTION", rank: "TOP 10", value: "44 000", unit: "Tons/year", barWidth: 40, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Cerro Matoso (Ni)", coords: [-75.536, 7.602], img: "https://cloudfront-us-east-1.images.arcpublishing.com/infobae/BRCZHWJE3ZCYJG2SMJLGDO4NKU.png", desc: "One of the world's largest ferronickel operations, in Córdoba department." },
+    ],
+  },
+  {
+    id: 192, code: "CU", name: "CUBA",
+    image: "https://www.mappemonde.net/wp-content/uploads/2021/03/Carte-Cuba-1.jpg",
+    description: "Significant nickel and cobalt producer through the Moa Joint Venture with Canada.",
+    stats: [
+  { label: "NICKEL PRODUCTION", rank: "TOP 10", value: "32.0", unit: "K Tons/year", barWidth: 35, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Moa Joint Venture (Ni/Co)", coords: [-74.903, 20.642], img: "https://cisp.cachefly.net/assets/articles/images/resized/0001044556_resized_nickelcobaltmoajvcubasherritt1120211022.jpg", desc: "50/50 JV processing lateritic ore to mixed sulphide precipitate for export." },
+    ],
+  },
+  {
+    id: 598, code: "PG", name: "PAPUA NEW GUINEA",
+    image: "https://www.axl.cefan.ulaval.ca/pacifique/images/papoung-map.gif",
+    description: "Emerging nickel-cobalt producer with significant untapped mineral potential.",
+    stats: [
+  { label: "NICKEL PRODUCTION", rank: "TOP 10", value: "28.7", unit: "K Tons/year", barWidth: 20, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Ramu Mine (Ni/Co)", coords: [145.207, -5.572], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQOnALeWhqn43jni6RCmvlvufr_FIOD6X9AQ&s", desc: "Important nickel-cobalt operation in Madang Province." },
+    ],
+  },
+  {
+    id: 716, code: "ZW", name: "ZIMBABWE",
+    image: "https://upload.wikimedia.org/wikipedia/commons/1/17/Carte_du_Zimbabwe_FR.png",
+    description: "Significant lithium reserves and growing producer of battery-grade lithium.",
+    stats: [
+      { label: "LITHIUM PRODUCTION", rank: "5TH GLOBALLY", value: "22.0", unit: "K Tons/year", barWidth: 40, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Bikita Mine (Li)", coords: [31.427, -20.963], img: "https://img.yicaiglobal.com/src/image/2022/02/19524468847673344.jpg", desc: "One of the world's richest lithium pegmatite deposits, in Masvingo province." },
+    ],
+  },
+    {
+    id: 620, code: "PT", name: "PORTUGAL",
+    image: "https://www.universalis.fr/typo3temp/assets/_processed_/b/3/csm_at015604_9c41b35b20.webp",
+    description: "Largest lithium reserves in the EU — but Mina do Barroso, Europe's biggest deposit, won't enter production until 2027. Already the EU's largest copper producer via the Neves-Corvo mine.",
+    stats: [
+      { label: "LITHIUM RESERVES (BARROSO)", rank: "LARGEST IN EU",   value: "39.0", unit: "M Tons ore",     barWidth: 70, barColor: "#111" },
+      { label: "LITHIUM PRODUCTION (2024)",  rank: "PRE-PRODUCTION",  value: "380",  unit: "Tons/year",      barWidth: 10, barColor: "#111" },
+      { label: "COPPER PRODUCTION",          rank: "LARGEST IN EU",   value: "~32",  unit: "K Tons/year",    barWidth: 35, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Mina do Barroso (Li)",  coords: [-7.786, 41.705], img: "https://www.geota.pt/storage/app/media/noticias/2021/2021-07-16/mina%20do%20barroso_001.jpeg", desc: "Europe's largest lithium deposit (39 Mt ore). Environmental approval granted 2023, production expected from 2027. Could supply 500 000 EV batteries/year." },
+    ],
+  },
+  {
+    id: 360, code: "ID", name: "INDONESIA",
+    image: "https://www.universalis.fr/media_src/at009404.jpg",
+    description: "World's largest nickel producer. Home to massive laterite deposits and a rapidly growing battery supply chain.",
+    stats: [
+      { label: "NICKEL PRODUCTION", rank: "1ST GLOBALLY", value: "2 200", unit: "K Tons/year", barWidth: 100, barColor: "#111" },
+      { label: "COBALT PRODUCTION", rank: "2ND GLOBALLY", value: "28.0",  unit: "K Tons/year", barWidth:  55, barColor: "#111" },
+      { label: "COPPER PRODUCTION", rank: "TOP 10",       value: "350",   unit: "K Tons/year", barWidth:  40, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Weda Bay Mine (Ni)",  coords: [127.993,  0.474], img: "https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iLd.64JywQpk/v0/-1x-1.webp", desc: "Major nickel laterite operation in North Maluku." },
+      { name: "Sorowako Mine (Ni)",  coords: [121.365, -2.537], img: "https://images.squarespace-cdn.com/content/v1/6336e7d5cd3efd295dcd9a4a/1677520854935-0EHP695549WYXH7AZCXG/Sorowako+Mines.jpeg", desc: "Vale's flagship nickel operation, producing 78 000 t/year." },
+      { name: "Grasberg Mine (Cu)",  coords: [137.108, -4.058], img: "https://www.mining.com/wp-content/uploads/2025/10/grasberg.jpg", desc: "One of the world's largest gold and copper reserves, in Papua." },
+    ],
+  },
+  {
+    id: 608, code: "PH", name: "PHILIPPINES",
+    image: "https://www.elnido.fr/wp-content/uploads/carte-philipinnes.jpg",
+    description: "Second-largest nickel producer globally, with major laterite deposits on Palawan and Mindanao.",
+    stats: [
+      { label: "NICKEL PRODUCTION", rank: "2ND GLOBALLY", value: "330", unit: "K Tons/year", barWidth: 75, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Rio Tuba Mine (Ni)", coords: [117.419, 8.570], img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeXKOaZg8LRXjpIl7oe4w6gkUuyuBhg8pfYA&s", desc: "Major nickel laterite mine in Bataraza, Palawan." },
+    ],
+  },
+  {
+    id: 324, code: "GN", name: "GUINEA",
+    image: "https://static-cms.routard.com/web-routard/uploads/guyana_routard_1475639_2f4900aa07.gif",
+    description: "World's largest bauxite reserves. A critical but underexploited source of aluminium ore.",
+    stats: [
+      { label: "BAUXITE RESERVES",   rank: "1ST GLOBALLY", value: "7 400", unit: "M Tons",       barWidth: 100, barColor: "#111" },
+      { label: "BAUXITE PRODUCTION", rank: "TOP 3",        value: "82.0",  unit: "M Tons/year",  barWidth:  80, barColor: "#111" },
+    ],
+    mines: [
+      { name: "Sangarédi Mine (Al)", coords: [-13.726, 11.919], img: "https://ejatlas.org/media/conflict/bauxite-mining-boke-guinea/sangaredi_mine_aerial_view.jpg", desc: "One of the world's largest and highest-grade bauxite deposits." },
     ],
   },
 ];
